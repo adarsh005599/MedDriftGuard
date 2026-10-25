@@ -1,0 +1,44 @@
+# MedDriftGuard Pipeline Configuration
+pipeline:
+  name: "MedDriftGuard-v1"
+  version: "0.1.0"
+  random_seed: 42
+  supported_languages: ["en", "hi", "hinglish"]
+  supported_scripts: ["en", "devanagari", "roman_hindi"]
+
+stages:
+  triage:
+    enabled: true
+    config_file: "configs/triage.yaml"
+    emergency_action: "bypass_and_alert"
+
+  rewriter:
+    enabled: true
+    mode: "prompted" # Options: "prompted", "trained_m1"
+    model_name: "qwen2.5:3b"
+    max_history_turns: 2
+
+  ledger:
+    enabled: true
+    store_type: "in_memory"
+    versioned: true
+    track_retractions: true
+
+  retriever:
+    enabled: true
+    config_file: "configs/retriever.yaml"
+    top_k: 5
+
+  generator:
+    enabled: true
+    model_name: "qwen2.5:3b"
+    temperature: 0.1
+    enforce_citations: true
+    prohibit_dosages: true
+    prohibit_diagnoses: true
+
+  verifier:
+    enabled: true
+    config_file: "configs/verifier.yaml"
+    max_regenerations: 1
+    entailment_threshold: 0.70

@@ -1,0 +1,18 @@
+# M2 Training Configuration (Triage Classifier)
+model:
+  base_model: "google/muril-base-cased"
+  num_labels: 4 # emergency, urgent, routine, non_medical
+  max_seq_length: 128
+
+training:
+  learning_rate: 0.00002
+  epochs: 4
+  batch_size: 32
+  weight_decay: 0.01
+  class_weighted_loss: true
+  target_emergency_recall: 0.95
+
+data:
+  train_file: "data/synthetic/m2_train.jsonl"
+  val_file: "data/synthetic/m2_val.jsonl"
+  held_out_emergency_file: "data/redteam/held_out_emergency.jsonl"

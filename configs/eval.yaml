@@ -1,0 +1,20 @@
+# Evaluation Harness Configuration
+experiment_id: "baseline_eval"
+random_seeds: [42, 123, 999]
+benchmark_path: "data/hhdb/test.jsonl"
+dev_retrieval_path: "data/dev_retrieval.jsonl"
+
+systems_to_compare:
+  - "B0" # LLM only, no retrieval
+  - "B1" # Standard RAG, full-history concatenation
+  - "B2" # RAG + prompted conversational query rewriter
+  - "B3" # MedDriftGuard full system
+
+metrics:
+  - "unsupported_claim_rate"
+  - "recall_at_5"
+  - "recall_at_10"
+  - "citation_precision"
+  - "leak_rate"
+  - "emergency_recall"
+  - "abstention_rate"

@@ -1,0 +1,9 @@
+# Claim Verifier Configuration
+verifier:
+  model_type: "nli"
+  model_name: "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
+  threshold_supported: 0.70
+  threshold_contradicted: 0.30
+  max_regenerations: 1
+  atomic_claim_splitter: "prompted"
+  abstain_threshold_ratio: 0.50 # If more than 50% claims unsupported, abstain

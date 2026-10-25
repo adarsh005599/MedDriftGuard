@@ -1,0 +1,1 @@
+Run the evaluation harness for the experiment id I give you. Use configs/eval.yaml, 3 seeds, write results/<exp_id>/. Then print a markdown table of metrics by turn depth and flag any metric that regressed vs the previous experiment.

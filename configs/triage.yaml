@@ -1,0 +1,27 @@
+# Triage Configuration
+emergency_numbers:
+  all_emergencies: "112"
+  ambulance: "108"
+  mental_health_helpline: "14416 (Tele-MANAS)"
+
+fixed_messages:
+  en:
+    emergency: "This could be serious. Please call 112 (or ambulance 108 in India) or go to the nearest emergency room immediately. I cannot evaluate emergency situations."
+    self_harm: "You are not alone. Please reach out to someone you trust or contact the Tele-MANAS national helpline at 14416 or emergency services at 112 right now."
+  hi:
+    emergency: "यह गंभीर हो सकता है। कृपया तुरंत 112 (या भारत में एम्बुलेंस 108) पर कॉल करें या नजदीकी अस्पताल के आपातकालीन विभाग में जाएं। मैं आपात स्थिति का आकलन नहीं कर सकता।"
+    self_harm: "आप अकेले नहीं हैं। कृपया तुरंत किसी भरोसेमंद व्यक्ति से बात करें या टेली-मानस हेल्पलाइन 14416 अथवा 112 पर संपर्क करें।"
+  roman_hindi:
+    emergency: "Yeh gambhir ho sakta hai. Kripya turant 112 (ya ambulance 108) par call karein ya paas ke hospital ke emergency room mein jayein. Main emergency situations ko assess nahi kar sakta."
+    self_harm: "Aap akele nahi hain. Kripya turant kisi bharosemand vyakti se baat karein ya Tele-MANAS helpline 14416 ya 112 par call karein."
+
+red_flag_lexicon_categories:
+  - chest_pain
+  - breathing_difficulty
+  - stroke_signs
+  - severe_bleeding
+  - unconsciousness
+  - seizure
+  - poisoning
+  - severe_allergic_reaction
+  - suicidal_ideation

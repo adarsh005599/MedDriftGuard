@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Testing and linting
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local model weights and embeddings cache
+kb/index/
+*.pkl
+*.bin
+
+# Environment and secrets
+.env
+.DS_Store
+Thumbs.db

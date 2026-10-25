@@ -1,0 +1,26 @@
+# M1 Training Configuration (QLoRA Rewriter + Ledger Extractor)
+model:
+  base_model: "Qwen/Qwen2.5-1.5B-Instruct"
+  load_in_4bit: true
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+training:
+  learning_rate: 0.0002
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.03
+  epochs: 3
+  batch_size: 4
+  gradient_accumulation_steps: 4
+  max_seq_length: 1024
+  eval_steps: 100
+  save_total_limit: 2
+  logging_steps: 25
+
+data:
+  train_file: "data/synthetic/m1_train.jsonl"
+  val_file: "data/synthetic/m1_val.jsonl"
+  # Hard rule: strictly zero drug dosages in dataset
+  strictly_no_dosages: true

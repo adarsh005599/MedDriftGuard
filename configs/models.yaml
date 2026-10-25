@@ -1,0 +1,26 @@
+# Local Model Configuration
+generator:
+  name: "Qwen/Qwen2.5-3B-Instruct"
+  quantization: "4-bit"
+  local_server: "ollama"
+  context_window: 4096
+  temperature: 0.1
+
+rewriter_m1:
+  base_model: "Qwen/Qwen2.5-1.5B-Instruct"
+  quantization: "4-bit"
+  prompted_fallback: true
+
+triage_m2:
+  base_model: "google/muril-base-cased"
+  max_seq_length: 128
+  rule_fallback: true
+
+embeddings:
+  name: "BAAI/bge-m3"
+  max_length: 8192
+  device: "cpu"
+
+reranker:
+  name: "BAAI/bge-reranker-large"
+  device: "cpu"
