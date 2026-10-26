@@ -1,0 +1,813 @@
+{
+  "conversations": [
+    {
+      "conv_id": "en_conv_01",
+      "language": "en",
+      "script": "en",
+      "description": "English symptom report followed by correction and home care follow-up",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "I have had a high fever for 2 days.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": ["cough"]
+        },
+        {
+          "turn_id": 2,
+          "user_message": "Actually, no fever anymore, only a dry cough.",
+          "expected_topic_shift": false,
+          "expected_retractions": ["fever"],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["dry cough"],
+          "query_must_not_contain": ["fever"]
+        },
+        {
+          "turn_id": 3,
+          "user_message": "What is its home care and treatment?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["dry cough", "home care"],
+          "query_must_not_contain": ["fever"]
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_02",
+      "language": "en",
+      "script": "en",
+      "description": "English topic shift from headache to acidity",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "I am experiencing a severe headache.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["severe headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": ["acidity"]
+        },
+        {
+          "turn_id": 2,
+          "user_message": "Forget that, I have a different question about acidity and heartburn.",
+          "expected_topic_shift": true,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["severe headache", "acidity", "heartburn"],
+          "query_must_contain": ["acidity"],
+          "query_must_not_contain": ["headache"]
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_03",
+      "language": "en",
+      "script": "en",
+      "description": "English diarrhoea with dehydration follow-up",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "My child has diarrhoea and dehydration for 1 day.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["diarrhoea", "dehydration"],
+          "query_must_contain": ["diarrhoea"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "When should we see a doctor for this?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["diarrhoea", "dehydration"],
+          "query_must_contain": ["when to see a doctor"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_04",
+      "language": "en",
+      "script": "en",
+      "description": "English hypertension question with lifestyle follow-up",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "My blood pressure reading was high BP today.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["hypertension"],
+          "query_must_contain": ["hypertension"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "What is its home care and dietary advice?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["hypertension"],
+          "query_must_contain": ["hypertension", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_05",
+      "language": "en",
+      "script": "en",
+      "description": "English dengue awareness inquiry",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "Can breakbone fever be dengue?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dengue awareness"],
+          "query_must_contain": ["dengue"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "What are its warning signs and causes?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dengue awareness"],
+          "query_must_contain": ["dengue", "causes"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_06",
+      "language": "en",
+      "script": "en",
+      "description": "English correction of duration and symptoms",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "I have had cough for 3 days.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["cough"],
+          "query_must_contain": ["cough"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "No, not cough, actually only headache.",
+          "expected_topic_shift": false,
+          "expected_retractions": ["cough"],
+          "expected_active_symptoms": ["headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": ["cough"]
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_07",
+      "language": "en",
+      "script": "en",
+      "description": "English acidity after meals",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "I feel heartburn and acid reflux after meals.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["heartburn", "acid reflux"],
+          "query_must_contain": ["heartburn"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "Leave that, by the way do you know about fever?",
+          "expected_topic_shift": true,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["heartburn", "acid reflux", "fever"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": ["heartburn"]
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_08",
+      "language": "en",
+      "script": "en",
+      "description": "English tension headache",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "Feeling tension headache with tight band around head.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["tension headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "What is its remedy?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["tension headache"],
+          "query_must_contain": ["headache", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_09",
+      "language": "en",
+      "script": "en",
+      "description": "English productive cough inquiry",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "Dealing with productive cough.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["productive cough"],
+          "query_must_contain": ["cough"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "When to see a doctor for this cough?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["productive cough"],
+          "query_must_contain": ["when to see a doctor"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "en_conv_10",
+      "language": "en",
+      "script": "en",
+      "description": "English fever with dehydration",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "High fever with chills and dehydration.",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever", "dehydration"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "No longer have high fever, fever is gone.",
+          "expected_topic_shift": false,
+          "expected_retractions": ["fever"],
+          "expected_active_symptoms": ["dehydration"],
+          "query_must_contain": ["dehydration"],
+          "query_must_not_contain": ["fever"]
+        }
+      ]
+    },
+
+    {
+      "conv_id": "hinglish_conv_01",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish fever report followed by correction to dry cough",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "mujhe 2 din se tez bukhar hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": ["cough"]
+        },
+        {
+          "turn_id": 2,
+          "user_message": "nahi bukhar nahi hai, sirf sukhi khansi hai",
+          "expected_topic_shift": false,
+          "expected_retractions": ["fever"],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["dry cough"],
+          "query_must_not_contain": ["fever"]
+        },
+        {
+          "turn_id": 3,
+          "user_message": "iski home care kya hai?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["dry cough", "home care"],
+          "query_must_not_contain": ["fever"]
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_02",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish sar dard topic switch to acidity",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "mera sir dard bahut tez ho raha hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": ["acidity"]
+        },
+        {
+          "turn_id": 2,
+          "user_message": "chalo ye chhodo, mujhe acidity aur seene mein jalan ki baat karni hai",
+          "expected_topic_shift": true,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache", "acidity", "heartburn"],
+          "query_must_contain": ["acidity"],
+          "query_must_not_contain": ["headache"]
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_03",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish loose motion and ORS follow-up",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "kal se dast aur ulti ho rahi hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["diarrhoea"],
+          "query_must_contain": ["diarrhoea"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "iska ilaj aur ghar par kya karein?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["diarrhoea"],
+          "query_must_contain": ["diarrhoea", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_04",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish high BP concern",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "meri mummy ka high bp rehta hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["hypertension"],
+          "query_must_contain": ["hypertension"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "isme kya karein aur doctor ko kab dikhaye?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["hypertension"],
+          "query_must_contain": ["hypertension", "when to see a doctor"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_05",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish dengue awareness",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "dengue bukhar ke lakshan kya hote hain?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dengue awareness"],
+          "query_must_contain": ["dengue"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "iski home care aur bachaav kaise karein?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dengue awareness"],
+          "query_must_contain": ["dengue", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_06",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish cough negation",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "mujhe khansi hai 3 din se",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["cough"],
+          "query_must_contain": ["cough"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "nahi khansi nahi hai ab, sirf sar dard hai",
+          "expected_topic_shift": false,
+          "expected_retractions": ["cough"],
+          "expected_active_symptoms": ["headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": ["cough"]
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_07",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish acidity and khatti dakar",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "pet mein gas aur khatti dakar aa rahi hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["acidity", "acid reflux"],
+          "query_must_contain": ["acidity"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "iska ilaj kya hai?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["acidity", "acid reflux"],
+          "query_must_contain": ["acidity", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_08",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish migraine follow-up",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "aadhe sir me dard aur migraine jaisa lag raha hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache", "migraine"],
+          "query_must_contain": ["migraine"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "isme aaram ke liye kya karein?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache", "migraine"],
+          "query_must_contain": ["migraine", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_09",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish balgam wali khansi",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "balgam wali khansi ho gayi hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["productive cough"],
+          "query_must_contain": ["cough"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "ye kyu hota hai aur karan kya hai?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["productive cough"],
+          "query_must_contain": ["cough", "causes"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hinglish_conv_10",
+      "language": "hi",
+      "script": "roman_hindi",
+      "description": "Roman Hinglish bukhar retraction with dehydration",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "tez bukhar aur pani ki kami lag rahi hai",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever", "dehydration"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "nahi bukhar nahi raha, ab sirf dehydration hai",
+          "expected_topic_shift": false,
+          "expected_retractions": ["fever"],
+          "expected_active_symptoms": ["dehydration"],
+          "query_must_contain": ["dehydration"],
+          "query_must_not_contain": ["fever"]
+        }
+      ]
+    },
+
+    {
+      "conv_id": "hi_conv_01",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi fever inquiry followed by correction to dry cough",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "मुझे दो दिन से तेज बुखार है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": ["cough"]
+        },
+        {
+          "turn_id": 2,
+          "user_message": "नहीं, बुखार नहीं है, अब सिर्फ सूखी खांसी है।",
+          "expected_topic_shift": false,
+          "expected_retractions": ["fever"],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["dry cough"],
+          "query_must_not_contain": ["fever"]
+        },
+        {
+          "turn_id": 3,
+          "user_message": "इसके घरेलू उपाय और इलाज क्या हैं?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["dry cough", "home care"],
+          "query_must_not_contain": ["fever"]
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_02",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi सिरदर्द topic shift to एसिडिटी",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "मुझे सुबह से बहुत तेज सिरदर्द है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": ["acidity"]
+        },
+        {
+          "turn_id": 2,
+          "user_message": "यह छोड़ो, दूसरा सवाल एसिडिटी और सीने में जलन के बारे में है।",
+          "expected_topic_shift": true,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache", "acidity", "heartburn"],
+          "query_must_contain": ["acidity"],
+          "query_must_not_contain": ["headache"]
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_03",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi dast and dehydration",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "कल से पतले दस्त और डिहाइड्रेशन हो रहा है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["diarrhoea", "dehydration"],
+          "query_must_contain": ["diarrhoea"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "इसका इलाज और ओआरएस कैसे लें?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["diarrhoea", "dehydration"],
+          "query_must_contain": ["diarrhoea", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_04",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi उच्च रक्तचाप",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "मुझे उच्च रक्तचाप और हाई बीपी की समस्या है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["hypertension"],
+          "query_must_contain": ["hypertension"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "इसके उपाय क्या हैं?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["hypertension"],
+          "query_must_contain": ["hypertension", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_05",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi डेंगू बुखार",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "डेंगू के गंभीर खतरे के लक्षण क्या हैं?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dengue awareness"],
+          "query_must_contain": ["dengue"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "इसके कारण और मच्छर से बचाव के उपाय",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dengue awareness"],
+          "query_must_contain": ["dengue", "causes"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_06",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi खांसी negation",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "मुझे सूखी खांसी है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["dry cough"],
+          "query_must_contain": ["cough"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "नहीं, खांसी नहीं है, केवल सिरदर्द है।",
+          "expected_topic_shift": false,
+          "expected_retractions": ["cough"],
+          "expected_active_symptoms": ["headache"],
+          "query_must_contain": ["headache"],
+          "query_must_not_contain": ["cough"]
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_07",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi एसिडिटी और सीने में जलन",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "एसिडिटी और सीने में जलन हो रही है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["acidity", "heartburn"],
+          "query_must_contain": ["acidity"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "इसमें क्या करें?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["acidity", "heartburn"],
+          "query_must_contain": ["acidity", "home care"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_08",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi माइग्रेन",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "आधे सिर में माइग्रेन का तेज दर्द है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache", "migraine"],
+          "query_must_contain": ["migraine"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "इसके लक्षण और कारण क्या हैं?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["headache", "migraine"],
+          "query_must_contain": ["migraine", "causes"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_09",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi तेज बुखार",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "मुझे तेज बुखार आ रहा है।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "बुखार में कब डॉक्टर को दिखाना चाहिए?",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever"],
+          "query_must_contain": ["when to see a doctor"],
+          "query_must_not_contain": []
+        }
+      ]
+    },
+    {
+      "conv_id": "hi_conv_10",
+      "language": "hi",
+      "script": "devanagari",
+      "description": "Devanagari Hindi बुखार retraction with डिहाइड्रेशन",
+      "turns": [
+        {
+          "turn_id": 1,
+          "user_message": "तेज बुखार और डिहाइड्रेशन के लक्षण हैं।",
+          "expected_topic_shift": false,
+          "expected_retractions": [],
+          "expected_active_symptoms": ["high fever", "dehydration"],
+          "query_must_contain": ["fever"],
+          "query_must_not_contain": []
+        },
+        {
+          "turn_id": 2,
+          "user_message": "नहीं बुखार नहीं है, अब सिर्फ डिहाइड्रेशन है।",
+          "expected_topic_shift": false,
+          "expected_retractions": ["fever"],
+          "expected_active_symptoms": ["dehydration"],
+          "query_must_contain": ["dehydration"],
+          "query_must_not_contain": ["fever"]
+        }
+      ]
+    }
+  ]
+}
