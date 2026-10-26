@@ -1,5 +1,15 @@
 # Phase 2 Completion Report: Hybrid Retriever & Benchmark Evaluation
 
+## Verification Update — 2026-10-26
+
+This update supersedes the older BGE-M3 model and retrieval metrics below.
+
+- Retriever configuration now selects FastEmbed-supported multilingual `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`; BM25 and empty/malformed index behavior have regression tests.
+- Command run: `python -m pytest tests/unit/test_retriever.py tests/unit/test_retrieval_eval.py -q` — **13 passed, 0 failed** (rerun during final review).
+- Full evaluation command ran on **104 questions** and **26 chunks**. Measured Recall@5 / Recall@10 / MRR: BM25 **0.7788 / 0.8750 / 0.6612**; dense **0.8846 / 0.9519 / 0.7504**; hybrid **0.8750 / 0.9519 / 0.7277**; hybrid plus reranker stage **0.8750 / 0.9519 / 0.7470**.
+- The test environment had no `sentence-transformers`; reranking used the deterministic contextual fallback, not a neural cross-encoder. The evaluation report labels this accurately.
+- Limitations: the 104 questions do not meet the planned 140-question design, and their gold labels were not independently reviewed in this run. The small KB makes scores diagnostic only.
+
 ## 1. What Was Built
 - **BM25 Keyword Search (`src/retriever/bm25_search.py`)**: Sparse lexical retrieval engine using `rank_bm25.BM25Okapi` over tokenized knowledge-base chunks.
 - **Dense Semantic Vector Search (`src/retriever/dense_search.py`)**: Vector retrieval using FastEmbed's ONNX-accelerated BGE multilingual embedding model with L2-normalized cosine similarity.
@@ -14,7 +24,9 @@
 - **Zero Heavy-GPU Dependencies**: Leveraged FastEmbed and ONNX Runtime for CPU execution without requiring multi-gigabyte PyTorch or CUDA installations.
 - **Script-Gap Mitigation**: Hybrid fusion combines exact clinical terminology from BM25 with dense semantic invariance, boosting Roman Hinglish Recall@5 from 0.7273 to 0.8788.
 
-## 3. Benchmark Metrics & Test Results
+## 3. Historical P2 Snapshot (Superseded)
+
+The model, test count, and retrieval scores below are from an earlier configuration. Use the measured metrics and backend details in the verification update at the top of this report and in `docs/retrieval_results.md`.
 Acceptance command executed:
 ```bash
 python -m pytest tests/ -v

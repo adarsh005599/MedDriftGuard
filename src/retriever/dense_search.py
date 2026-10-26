@@ -7,13 +7,13 @@ vector similarity search with cosine distance over knowledge base chunks.
 
 from __future__ import annotations
 
+import hashlib
 import os
-from pathlib import Path
-from typing import List, Optional, Tuple
+
 import numpy as np
 
-from src.common.schemas import RetrievedChunk
 from src.common.logging import get_logger
+from src.common.schemas import RetrievedChunk
 
 logger = get_logger("retriever.dense")
 
@@ -23,18 +23,18 @@ class DenseRetriever:
 
     def __init__(
         self,
-        chunks: List[RetrievedChunk],
-        model_name: str = "BAAI/bge-small-en-v1.5",
-        cache_dir: Optional[str] = None,
+        chunks: list[RetrievedChunk],
+        model_name: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        cache_dir: str | None = None,
     ):
         self.chunks = chunks
         self.model_name = model_name
-        self.embeddings: Optional[np.ndarray] = None
+        self.embeddings: np.ndarray | None = None
         self._init_encoder(model_name, cache_dir)
         if self.chunks:
             self.index_chunks()
 
-    def _init_encoder(self, model_name: str, cache_dir: Optional[str]) -> None:
+    def _init_encoder(self, model_name: str, cache_dir: str | None) -> None:
         """Initialize the ONNX embedding model."""
         try:
             from fastembed import TextEmbedding
@@ -42,11 +42,13 @@ class DenseRetriever:
             os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
             self.encoder = TextEmbedding(model_name=model_name, cache_dir=cache_dir)
             logger.info(f"Initialized DenseRetriever with FastEmbed model: {model_name}")
-        except Exception as e:
-            logger.warning(f"Could not load FastEmbed model '{model_name}': {e}. Using fallback vectorizer.")
+        except (ImportError, OSError, RuntimeError, ValueError) as e:
+            logger.warning(
+                f"Could not load FastEmbed model '{model_name}': {e}. Using fallback vectorizer."
+            )
             self.encoder = None
 
-    def _embed_texts(self, texts: List[str]) -> np.ndarray:
+    def _embed_texts(self, texts: list[str]) -> np.ndarray:
         """Embed a list of text strings into normalized float32 vectors."""
         if self.encoder is not None:
             vectors = list(self.encoder.embed(texts))
@@ -63,7 +65,8 @@ class DenseRetriever:
                 for word in text.lower().split():
                     for j in range(max(1, len(word) - 2)):
                         trigram = word[j : j + 3]
-                        idx = hash(trigram) % dim
+                        digest = hashlib.blake2b(trigram.encode("utf-8"), digest_size=4).digest()
+                        idx = int.from_bytes(digest, "big") % dim
                         matrix[i, idx] += 1.0
                 norm = np.linalg.norm(matrix[i])
                 if norm > 0:
@@ -76,12 +79,18 @@ class DenseRetriever:
         logger.info(f"Computing dense embeddings for {len(texts)} chunks...")
         self.embeddings = self._embed_texts(texts)
 
-    def search(self, query: str, top_k: int = 10) -> List[Tuple[RetrievedChunk, float]]:
+    def search(self, query: str, top_k: int = 10) -> list[tuple[RetrievedChunk, float]]:
         """
         Search for matching chunks using cosine similarity.
         Returns a list of (RetrievedChunk, similarity_score) sorted in descending order.
         """
-        if not query or not query.strip() or self.embeddings is None or not self.chunks:
+        if (
+            not query
+            or not query.strip()
+            or self.embeddings is None
+            or not self.chunks
+            or top_k <= 0
+        ):
             return []
 
         query_vec = self._embed_texts([query])[0]

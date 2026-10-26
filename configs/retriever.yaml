@@ -5,8 +5,8 @@ retriever:
   rrf_k: 60 # Reciprocal Rank Fusion constant
 
 dense:
-  model_name: "BAAI/bge-m3"
-  dimension: 1024
+  model_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  dimension: 384
   normalize_embeddings: true
   index_type: "qdrant" # Options: "qdrant", "faiss"
   qdrant_path: "kb/index/qdrant_local"

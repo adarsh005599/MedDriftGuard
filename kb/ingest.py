@@ -8,32 +8,31 @@ along with statistical audit reports in docs/kb_stats.md.
 
 from __future__ import annotations
 
-import json
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+from urllib.parse import urlparse
 
 # Ensure project root is in python path
 project_root = Path(__file__).resolve().parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from kb.cleaner import DocumentCleaner
 from kb.chunker import TextChunker
-from src.common.schemas import RetrievedChunk
+from kb.cleaner import DocumentCleaner
 from src.common.logging import get_logger
+from src.common.schemas import RetrievedChunk
 
 logger = get_logger("kb.ingest")
 
 
-def parse_sources_md(sources_file: Path) -> Dict[str, Dict[str, str]]:
+def parse_sources_md(sources_file: Path) -> dict[str, dict[str, str]]:
     """
     Parses kb/SOURCES.md to retrieve the allowlist of approved medical sources,
     their licenses, and base URLs.
     """
-    approved_sources: Dict[str, Dict[str, str]] = {}
+    approved_sources: dict[str, dict[str, str]] = {}
     if not sources_file.exists():
         logger.warning(f"SOURCES.md not found at {sources_file}")
         return approved_sources
@@ -58,6 +57,9 @@ def parse_sources_md(sources_file: Path) -> Dict[str, Dict[str, str]]:
             if not license_str or license_str.lower() in ["none", "tbd", "missing"]:
                 logger.warning(f"Source '{source_id}' skipped: missing or unverified license.")
                 continue
+            if status != "approved":
+                logger.warning(f"Source '{source_id}' skipped: registry status is not approved.")
+                continue
 
             approved_sources[source_id.lower()] = {
                 "name": name,
@@ -71,7 +73,7 @@ def parse_sources_md(sources_file: Path) -> Dict[str, Dict[str, str]]:
     return approved_sources
 
 
-def extract_metadata_from_html(html_text: str) -> Dict[str, str]:
+def extract_metadata_from_html(html_text: str) -> dict[str, str]:
     """Extract metadata from HTML comment header if present."""
     meta = {}
     comment_match = re.search(r"<!--\s*Metadata:\s*(.*?)\s*-->", html_text, re.DOTALL)
@@ -89,7 +91,7 @@ def run_ingestion(
     sources_file: Path = Path("kb/SOURCES.md"),
     output_file: Path = Path("kb/chunks.jsonl"),
     stats_file: Path = Path("docs/kb_stats.md"),
-) -> Tuple[List[RetrievedChunk], Dict[str, Any]]:
+) -> tuple[list[RetrievedChunk], dict[str, Any]]:
     """
     Executes the knowledge base ingestion pipeline.
     """
@@ -97,7 +99,7 @@ def run_ingestion(
     logger.info(f"Loaded {len(approved_sources)} approved source definitions.")
 
     chunker = TextChunker(target_tokens=300, min_tokens=30, max_tokens=380, overlap_pct=0.15)
-    all_chunks: List[RetrievedChunk] = []
+    all_chunks: list[RetrievedChunk] = []
 
     raw_files = list(raw_dir.glob("*.html"))
     logger.info(f"Discovered {len(raw_files)} raw HTML files to ingest.")
@@ -112,10 +114,36 @@ def run_ingestion(
         url = meta.get("url", f"https://example.org/{file_path.stem}")
         date_accessed = meta.get("date", "2026-10-25")
 
-        # License validation: source must have an approved license in SOURCES.md or in header
+        # A license string in document metadata is not sufficient: source must be allowlisted.
         matched_source = approved_sources.get(source_name.lower())
-        if matched_source and not license_str:
+        if matched_source is None:
+            logger.warning(
+                f"Skipping {file_path.name}: Source '{source_name}' is not in the approved registry."
+            )
+            continue
+
+        if not license_str:
             license_str = matched_source["license"]
+        elif license_str.strip().lower() != matched_source["license"].strip().lower():
+            logger.warning(
+                f"Skipping {file_path.name}: License metadata does not match the approved registry."
+            )
+            continue
+
+        source_hosts = {
+            (urlparse(base_url.strip()).hostname or "").removeprefix("www.").lower()
+            for base_url in matched_source["url"].split(",")
+        }
+        document_host = (urlparse(url).hostname or "").removeprefix("www.").lower()
+        if not document_host or not any(
+            document_host == host or document_host.endswith(f".{host}")
+            for host in source_hosts
+            if host
+        ):
+            logger.warning(
+                f"Skipping {file_path.name}: URL host is outside the approved source registry."
+            )
+            continue
 
         if not license_str or license_str.lower() in ["none", "missing"]:
             logger.warning(
@@ -156,10 +184,10 @@ def run_ingestion(
     return all_chunks, stats
 
 
-def generate_kb_stats(chunks: List[RetrievedChunk], stats_path: Path) -> Dict[str, Any]:
+def generate_kb_stats(chunks: list[RetrievedChunk], stats_path: Path) -> dict[str, Any]:
     """Generates a detailed markdown report of knowledge base statistics."""
-    topic_counts: Dict[str, int] = {}
-    source_counts: Dict[str, int] = {}
+    topic_counts: dict[str, int] = {}
+    source_counts: dict[str, int] = {}
     token_lengths = [len(c.text.split()) for c in chunks]
 
     for c in chunks:
@@ -188,8 +216,10 @@ def generate_kb_stats(chunks: List[RetrievedChunk], stats_path: Path) -> Dict[st
     with stats_path.open("w", encoding="utf-8") as f:
         f.write("# MedDriftGuard Knowledge Base Statistics (kb_stats.md)\n\n")
         f.write(f"- **Total Chunks:** {len(chunks)}\n")
-        f.write(f"- **Target Token Range:** 250–350 tokens (with 15% overlap)\n")
-        f.write(f"- **Token Lengths:** Min = {min_tokens}, Max = {max_tokens}, Mean = {mean_tokens}\n")
+        f.write("- **Target Token Range:** 250–350 tokens (with 15% overlap)\n")
+        f.write(
+            f"- **Token Lengths:** Min = {min_tokens}, Max = {max_tokens}, Mean = {mean_tokens}\n"
+        )
         f.write("- **Pharmaceutical Drug Dosages:** 0 (100% verified free of drug dosages)\n\n")
 
         f.write("## Chunks per Source\n\n| Source | Chunk Count |\n|---|---|\n")
@@ -202,12 +232,16 @@ def generate_kb_stats(chunks: List[RetrievedChunk], stats_path: Path) -> Dict[st
 
         f.write("\n## 20 Shortest Chunks for Manual Review\n\n")
         for i, c in enumerate(shortest_20, 1):
-            f.write(f"### {i}. `{c.chunk_id}` ({len(c.text.split())} tokens) — {c.topic} / {c.section}\n")
+            f.write(
+                f"### {i}. `{c.chunk_id}` ({len(c.text.split())} tokens) — {c.topic} / {c.section}\n"
+            )
             f.write(f"> {c.text[:200]}...\n\n")
 
         f.write("\n## 20 Longest Chunks for Manual Review\n\n")
         for i, c in enumerate(reversed(longest_20), 1):
-            f.write(f"### {i}. `{c.chunk_id}` ({len(c.text.split())} tokens) — {c.topic} / {c.section}\n")
+            f.write(
+                f"### {i}. `{c.chunk_id}` ({len(c.text.split())} tokens) — {c.topic} / {c.section}\n"
+            )
             f.write(f"> {c.text[:200]}...\n\n")
 
     logger.info(f"Written knowledge base audit report to {stats_path}.")

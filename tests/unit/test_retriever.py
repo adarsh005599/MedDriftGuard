@@ -5,14 +5,15 @@ Reranker scoring, and the architectural refusal of multi-turn chat history.
 """
 
 from pathlib import Path
+
 import pytest
 
+from src.common.schemas import RetrievedChunk
 from src.retriever.bm25_search import BM25Retriever
 from src.retriever.dense_search import DenseRetriever
 from src.retriever.fusion import reciprocal_rank_fusion
-from src.retriever.reranker import CrossEncoderReranker
 from src.retriever.hybrid_retriever import HybridRetriever
-from src.common.schemas import RetrievedChunk
+from src.retriever.reranker import CrossEncoderReranker
 
 
 @pytest.fixture
@@ -64,6 +65,60 @@ def test_bm25_exact_keyword_matching(sample_chunks):
     assert top_chunk.chunk_id == "test_fever_01"
     assert score > 0
     assert top_chunk.rank == 1
+
+
+def test_empty_retrieval_indexes_and_queries_are_safe(tmp_path):
+    bm25 = BM25Retriever([])
+    assert bm25.search("fever") == []
+    assert bm25.search("fever", top_k=0) == []
+
+    retriever = HybridRetriever(chunks=[], config_path=Path("configs/retriever.yaml"))
+    assert retriever.retrieve("fever") == []
+    assert retriever.retrieve("   ") == []
+    assert retriever.retrieve("fever", k=0) == []
+
+    missing_index = HybridRetriever(chunks_path=tmp_path / "missing.jsonl")
+    assert missing_index.retrieve("fever") == []
+
+
+def test_hybrid_retriever_uses_configured_models(sample_chunks):
+    retriever = HybridRetriever(chunks=sample_chunks)
+
+    assert (
+        retriever.dense.model_name == "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    )
+    assert retriever.reranker.model_name == "BAAI/bge-reranker-large"
+    assert retriever.mode == "hybrid"
+
+
+def test_chunk_loader_reports_malformed_jsonl(tmp_path):
+    malformed = tmp_path / "malformed.jsonl"
+    malformed.write_text("{not valid json}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        HybridRetriever(chunks_path=malformed)
+
+    invalid_record = tmp_path / "invalid_record.jsonl"
+    invalid_record.write_text('{"chunk_id": "missing required fields"}\n', encoding="utf-8")
+    with pytest.raises(ValueError):
+        HybridRetriever(chunks_path=invalid_record)
+
+
+def test_empty_jsonl_index_is_safe(tmp_path):
+    empty_index = tmp_path / "empty.jsonl"
+    empty_index.write_text("", encoding="utf-8")
+
+    retriever = HybridRetriever(chunks_path=empty_index)
+
+    assert retriever.retrieve("standalone query") == []
+
+
+def test_dense_fallback_embeddings_are_reproducible(sample_chunks):
+    first = DenseRetriever(sample_chunks)
+    second = DenseRetriever(sample_chunks)
+
+    if first.encoder is None and second.encoder is None:
+        assert (first.embeddings == second.embeddings).all()
 
 
 def test_dense_retriever_cosine_similarity(sample_chunks):

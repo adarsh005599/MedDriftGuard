@@ -1,5 +1,16 @@
 # Phase 3 Completion Report: Patient-State Ledger & Standalone Rewriter
 
+## Verification Update — 2026-10-26
+
+This update supersedes the historical claims below, especially the claim that the prompted model had not been implemented and the old test count.
+
+- Ledger supports all seven documented fact types and versioned `active`, `corrected`, and `retracted` states. Symptom extraction handles the tested English, Devanagari, and Roman Hinglish corrections, avoids recording informational questions as patient symptoms, and resolves follow-ups from the ledger or at most the last two turns.
+- The prompted baseline has an optional local Ollama client via `StandaloneRewriter.from_config()`. It validates the documented JSON response, requires verbatim evidence from the current user message for updates, retries malformed/unsafe outputs, and falls back to deterministic rules. Unit tests use a mock; no paid API is required.
+- Commands run: `python -m pytest tests/unit/test_ledger.py tests/unit/test_rewriter.py -q` — **20 passed**; `python debug_p3.py` — **0 fixture failures**; `make.bat test-all` — **62 passed, 0 failed** on Python 3.12.0.
+- Regression coverage now checks every fixture turn's active symptoms, all fact types, malformed JSON retry, unsupported fact rejection, empty input, script detection, ambiguity, topic changes, and standalone-query-only retriever use.
+- Limitation: live Ollama service/model execution has not been tested. Pattern-based rule fallback recognizes only its configured lexicon and cannot understand arbitrary medical topics.
+- Acceptance status: implementation and offline tests pass, but live local-model behavior remains unverified; the deterministic fallback does not extract every documented fact type on its own.
+
 ## 1. What Was Built
 
 ### Patient-State Ledger (`src/ledger/patient_ledger.py`)
@@ -93,21 +104,22 @@ User Message (EN / Roman Hinglish / Devanagari)
 
 ---
 
-## 3. Test Results
+## 3. Current Test Results
 
 ### Unit Tests
 
-All 40 tests pass in **6.76 seconds**:
+Current full-suite result: **62 passed, 0 failed**. The previous 40-test snapshot was from the earlier phase state and is superseded.
 
 ```
-tests/unit/test_api.py          .        [  1 passed ]
-tests/unit/test_kb_ingest.py    ......   [  6 passed ]
-tests/unit/test_ledger.py       .....    [  5 passed ]
-tests/unit/test_retriever.py    ......   [  6 passed ]
-tests/unit/test_rewriter.py     ....     [  4 passed ]
-tests/unit/test_schemas.py      ......   [ 18 passed ]
+tests/unit/test_api.py                 [  1 passed ]
+tests/unit/test_kb_ingest.py           [ 10 passed ]
+tests/unit/test_ledger.py              [  6 passed ]
+tests/unit/test_retrieval_eval.py      [  2 passed ]
+tests/unit/test_retriever.py           [ 11 passed ]
+tests/unit/test_rewriter.py            [ 14 passed ]
+tests/unit/test_schemas.py             [ 18 passed ]
                                          -----------
-                                TOTAL:   40 passed, 0 failed
+                                TOTAL:   62 passed, 0 failed
 ```
 
 **P3 Ledger tests (`test_ledger.py`):**
@@ -127,7 +139,7 @@ tests/unit/test_schemas.py      ......   [ 18 passed ]
 | `test_rule_extractor_negation_and_retraction` | Hinglish negation -> retract+add |
 | `test_topic_shift_detection` | EN/Hinglish/Devanagari topic shift patterns |
 | `test_pronoun_followup_resolution` | Pronoun ("its home care") resolved to ledger symptom |
-| `test_30_conversations_acceptance_suite` | All 30 fixture conversations — 100% pass |
+| `test_30_conversations_acceptance_suite` | All 30 fixture conversations — 100% pass; active facts checked on every turn |
 
 ### Acceptance Test: 30 Hand-Written Conversations
 
@@ -156,7 +168,7 @@ tests/unit/test_schemas.py      ......   [ 18 passed ]
 | Rewriter outputs structured `RewriterResult` with clean English `standalone_query_en` | PASS |
 | 30 hand-written test conversations in `tests/fixtures/conversations_p3.json` pass 100% | PASS |
 | Acceptance test `test_30_conversations_acceptance_suite` passes | PASS |
-| All 40 cumulative tests pass (`pytest tests/ -v`) | PASS |
+| All 62 cumulative tests pass (`make.bat test-all`) | PASS |
 | `docs/phase_3.md` generated | PASS |
 
 ---

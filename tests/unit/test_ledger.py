@@ -4,8 +4,7 @@ Validates versioned fact addition, retractions, corrections, superseding pointer
 and privacy-safe summary formatting.
 """
 
-import pytest
-from src.common.schemas import LedgerFact, LedgerUpdate
+from src.common.schemas import LedgerUpdate
 from src.ledger.patient_ledger import PatientLedger
 
 
@@ -28,9 +27,7 @@ def test_ledger_add_fact():
 def test_ledger_retract_fact():
     ledger = PatientLedger()
     # Turn 1: Add fever
-    ledger.apply_update(
-        LedgerUpdate(op="add", fact_type="symptom", value="fever"), turn_id=1
-    )
+    ledger.apply_update(LedgerUpdate(op="add", fact_type="symptom", value="fever"), turn_id=1)
     assert len(ledger.get_active_facts()) == 1
 
     # Turn 2: Retract fever ("nahi bukhar nahi hai")
@@ -55,9 +52,7 @@ def test_ledger_retract_fact():
 def test_ledger_correct_fact_chain():
     ledger = PatientLedger()
     # Turn 1: User says cough
-    f1 = ledger.apply_update(
-        LedgerUpdate(op="add", fact_type="symptom", value="cough"), turn_id=1
-    )
+    f1 = ledger.apply_update(LedgerUpdate(op="add", fact_type="symptom", value="cough"), turn_id=1)
     assert f1.status == "active"
 
     # Turn 2: User corrects to dry cough
@@ -77,12 +72,8 @@ def test_ledger_correct_fact_chain():
 
 def test_ledger_summary_string():
     ledger = PatientLedger()
-    ledger.apply_update(
-        LedgerUpdate(op="add", fact_type="symptom", value="dry cough"), turn_id=1
-    )
-    ledger.apply_update(
-        LedgerUpdate(op="add", fact_type="duration", value="3 days"), turn_id=1
-    )
+    ledger.apply_update(LedgerUpdate(op="add", fact_type="symptom", value="dry cough"), turn_id=1)
+    ledger.apply_update(LedgerUpdate(op="add", fact_type="duration", value="3 days"), turn_id=1)
 
     summary = ledger.to_summary_string()
     assert "Symptom: dry cough" in summary
@@ -91,9 +82,7 @@ def test_ledger_summary_string():
 
 def test_ledger_never_stores_unmentioned_info():
     ledger = PatientLedger()
-    ledger.apply_update(
-        LedgerUpdate(op="add", fact_type="symptom", value="headache"), turn_id=1
-    )
+    ledger.apply_update(LedgerUpdate(op="add", fact_type="symptom", value="headache"), turn_id=1)
     active = ledger.get_active_facts()
 
     # Verify no diagnostic extrapolation occurred
@@ -101,3 +90,27 @@ def test_ledger_never_stores_unmentioned_info():
     assert active[0].value == "headache"
     assert active[0].fact_type == "symptom"
     assert active[0].value != "brain tumor"
+
+
+def test_ledger_supports_all_documented_fact_types():
+    fact_types = (
+        "age_group",
+        "symptom",
+        "duration",
+        "medication_mentioned",
+        "allergy_mentioned",
+        "condition_mentioned",
+        "user_correction",
+    )
+    ledger = PatientLedger()
+
+    for turn_id, fact_type in enumerate(fact_types, start=1):
+        fact = ledger.apply_update(
+            LedgerUpdate(op="add", fact_type=fact_type, value=f"stated {fact_type}"),
+            turn_id=turn_id,
+        )
+        assert fact.fact_type == fact_type
+        assert fact.turn_id == turn_id
+        assert fact.status == "active"
+
+    assert {fact.fact_type for fact in ledger.get_active_facts()} == set(fact_types)

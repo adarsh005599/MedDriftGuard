@@ -4,7 +4,7 @@
 
 setup:
 	python -m pip install --upgrade pip
-	python -m pip install -e .[dev]
+	python -m pip install -e .[dev,retrieval]
 
 test:
 	python -m pytest tests/unit -v

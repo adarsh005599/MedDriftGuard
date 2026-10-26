@@ -8,8 +8,7 @@ Supports fact addition, retraction, correction, and superseding chains.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
-from src.common.schemas import FactStatus, FactType, LedgerFact, LedgerUpdate
+from src.common.schemas import FactType, LedgerFact, LedgerUpdate
 
 
 class PatientLedger:
@@ -19,31 +18,35 @@ class PatientLedger:
     """
 
     def __init__(self):
-        self._facts: List[LedgerFact] = []
+        self._facts: list[LedgerFact] = []
         self._fact_counter: int = 0
 
     @property
-    def all_facts(self) -> List[LedgerFact]:
+    def all_facts(self) -> list[LedgerFact]:
         """Return all facts including historical retracted and corrected facts."""
         return list(self._facts)
 
-    def get_active_facts(self) -> List[LedgerFact]:
+    def get_active_facts(self) -> list[LedgerFact]:
         """Return only currently active, unretracted user facts."""
         return [f for f in self._facts if f.status == "active"]
 
-    def get_retracted_facts(self) -> List[LedgerFact]:
+    def get_retracted_facts(self) -> list[LedgerFact]:
         """Return all facts that have been retracted or superseded."""
         return [f for f in self._facts if f.status in ("retracted", "corrected")]
 
-    def get_active_symptoms(self) -> List[str]:
+    def get_active_symptoms(self) -> list[str]:
         """Convenience method to retrieve values of all active symptoms."""
         return [f.value for f in self._facts if f.status == "active" and f.fact_type == "symptom"]
 
-    def find_fact(self, fact_type: FactType, value: str) -> Optional[LedgerFact]:
+    def find_fact(self, fact_type: FactType, value: str) -> LedgerFact | None:
         """Find the latest active fact matching fact_type and value."""
         val_clean = value.strip().lower()
         for f in reversed(self._facts):
-            if f.status == "active" and f.fact_type == fact_type and f.value.strip().lower() == val_clean:
+            if (
+                f.status == "active"
+                and f.fact_type == fact_type
+                and f.value.strip().lower() == val_clean
+            ):
                 return f
         return None
 
@@ -82,6 +85,22 @@ class PatientLedger:
 
             if target_fact is None:
                 target_fact = self.find_fact(update.fact_type, update.value)
+
+            if target_fact is None and update.fact_type == "symptom":
+                value = update.value.strip().lower()
+                target_fact = next(
+                    (
+                        fact
+                        for fact in reversed(self._facts)
+                        if fact.status == "active"
+                        and fact.fact_type == "symptom"
+                        and (
+                            fact.value.strip().lower().endswith(f" {value}")
+                            or value.endswith(f" {fact.value.strip().lower()}")
+                        )
+                    ),
+                    None,
+                )
 
             if target_fact is not None:
                 target_fact.status = "retracted"
@@ -138,7 +157,7 @@ class PatientLedger:
 
         raise ValueError(f"Unknown ledger update op: {update.op}")
 
-    def apply_updates(self, updates: List[LedgerUpdate], turn_id: int) -> List[LedgerFact]:
+    def apply_updates(self, updates: list[LedgerUpdate], turn_id: int) -> list[LedgerFact]:
         """Apply a batch of updates for a single conversational turn."""
         applied = []
         for upd in updates:
@@ -154,7 +173,7 @@ class PatientLedger:
         if not active:
             return "No user facts recorded yet."
 
-        grouped: Dict[str, List[str]] = {}
+        grouped: dict[str, list[str]] = {}
         for f in active:
             grouped.setdefault(f.fact_type, []).append(f.value)
 

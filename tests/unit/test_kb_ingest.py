@@ -4,14 +4,15 @@ Validates HTML cleaning, zero-dosage safety filtering, section chunking,
 deterministic chunk IDs, and license verification.
 """
 
-from pathlib import Path
 import json
+from pathlib import Path
+
 import pytest
 
-from kb.cleaner import DocumentCleaner
-from kb.safety_filter import contains_drug_dosage, strip_drug_dosages
 from kb.chunker import TextChunker
+from kb.cleaner import DocumentCleaner
 from kb.ingest import parse_sources_md, run_ingestion
+from kb.safety_filter import contains_drug_dosage, strip_drug_dosages
 from src.common.schemas import RetrievedChunk
 
 
@@ -53,7 +54,9 @@ def test_safety_filter_detects_and_strips_dosages():
     assert contains_drug_dosage("Drink plenty of water and rest in bed.") is False
 
     # Test stripping dosages
-    unsafe_text = "For adult fever, take 500mg tablets every 6 hours. Drink 2 liters of water daily."
+    unsafe_text = (
+        "For adult fever, take 500mg tablets every 6 hours. Drink 2 liters of water daily."
+    )
     cleaned, redactions = strip_drug_dosages(unsafe_text)
 
     assert redactions > 0
@@ -148,6 +151,78 @@ def test_parse_sources_md_skips_unlicensed_sources(tmp_path):
     assert "medlineplus" in approved
     assert "unlicensed_blog" not in approved
     assert "missing_license" not in approved
+
+
+def test_parse_sources_md_skips_sources_not_marked_approved(tmp_path):
+    sources_file = tmp_path / "SOURCES.md"
+    sources_file.write_text(
+        "| Source ID | Source Name | Base URL | License / Terms | Medical Scope | Ingestion Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| `medlineplus` | MedlinePlus | https://medlineplus.gov | Public Domain | Health | Unapproved |\n",
+        encoding="utf-8",
+    )
+
+    assert parse_sources_md(sources_file) == {}
+
+
+def test_ingestion_skips_source_not_in_approved_registry(tmp_path):
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "unapproved.html").write_text(
+        "<!-- Metadata: Source: Unapproved Blog, License: permissive, Topic: cough, "
+        "URL: https://example.invalid/cough, Date: 2026-10-26 -->"
+        "<main><h1>Cough</h1><p>This is an informational test passage long enough to form a chunk.</p></main>",
+        encoding="utf-8",
+    )
+    sources_file = tmp_path / "SOURCES.md"
+    sources_file.write_text(
+        "| Source ID | Source Name | Base URL | License / Terms | Medical Scope | Ingestion Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| `medlineplus` | MedlinePlus | https://medlineplus.gov | Public Domain | Health | Approved |\n",
+        encoding="utf-8",
+    )
+
+    chunks, _ = run_ingestion(
+        raw_dir=raw_dir,
+        sources_file=sources_file,
+        output_file=tmp_path / "chunks.jsonl",
+        stats_file=tmp_path / "stats.md",
+    )
+
+    assert chunks == []
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        "Source: MedlinePlus, License: Public Domain, Topic: cough, URL: https://evil.invalid/cough, Date: 2026-10-26",
+        "Source: MedlinePlus, License: Unverified, Topic: cough, URL: https://medlineplus.gov/cough, Date: 2026-10-26",
+    ],
+)
+def test_ingestion_skips_registry_url_or_license_mismatch(tmp_path, metadata):
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "mismatch.html").write_text(
+        f"<!-- Metadata: {metadata} -->"
+        "<main><h1>Cough</h1><p>This is an informational test passage long enough to form a chunk.</p></main>",
+        encoding="utf-8",
+    )
+    sources_file = tmp_path / "SOURCES.md"
+    sources_file.write_text(
+        "| Source ID | Source Name | Base URL | License / Terms | Medical Scope | Ingestion Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| `medlineplus` | MedlinePlus | https://medlineplus.gov | Public Domain | Health | Approved |\n",
+        encoding="utf-8",
+    )
+
+    chunks, _ = run_ingestion(
+        raw_dir=raw_dir,
+        sources_file=sources_file,
+        output_file=tmp_path / "chunks.jsonl",
+        stats_file=tmp_path / "stats.md",
+    )
+
+    assert chunks == []
 
 
 def test_generated_chunks_jsonl_validity():

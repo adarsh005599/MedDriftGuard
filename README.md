@@ -45,7 +45,7 @@ flowchart TD
         KBIndex["📚 Curated Knowledge Base<br/>(MedlinePlus, WHO, MoHFW, ICMR)"]:::store
     end
 
-    Retriever["🔍 Hybrid Retriever<br/>(Dense BGE-M3 + Sparse BM25 + Reranker)"]:::core
+    Retriever["🔍 Hybrid Retriever<br/>(Multilingual ONNX Dense + BM25 + Reranker)"]:::core
     Generator["✍️ Evidence-Bound Generator<br/>(Inputs: Standalone Query + Top Chunks + Ledger)"]:::core
     
     Verifier{"🔬 Claim-Level Verifier<br/>(Atomic Claim NLI Entailment)"}:::safety
@@ -116,7 +116,7 @@ meddriftguard/
 │   ├── triage/                      # Deterministic red-flag triage gate
 │   ├── rewriter/                    # Conversational query normalizer & rewriter
 │   ├── ledger/                      # Patient-state ledger (versioned facts)
-│   ├── retriever/                   # Hybrid retriever (BGE-M3 + BM25 + Reranker)
+│   ├── retriever/                   # Hybrid retriever (multilingual dense + BM25 + RRF)
 │   ├── generator/                   # Evidence-bound response generator
 │   ├── verifier/                    # Atomic claim-level NLI verifier
 │   ├── pipeline/                    # End-to-end orchestration pipeline
@@ -156,8 +156,8 @@ meddriftguard/
 ### 2. Setup
 Clone the repository and install dependencies:
 ```bash
-# Using pip
-pip install -e .[dev]
+# Using pip (tests and CPU retrieval backend)
+pip install -e ".[dev,retrieval]"
 
 # On Linux/macOS
 make setup
@@ -191,10 +191,20 @@ Open your browser to `http://127.0.0.1:8000/health` to confirm the API is runnin
 
 | Phase | Description | Status |
 |:---:|---|:---:|
-| **P0** | **Project scaffolding, configuration, Pydantic schemas, unit tests, and README** | ✅ Completed |
-| **P1** | Medical knowledge-base ingestion pipeline (approved sources, section chunking, license tracking) | ⏳ Next |
-| **P2** | Hybrid retriever (BGE-M3 dense embeddings, BM25 keyword search, RRF fusion, reranker) | 📅 Planned |
-| **P3** | Patient-state ledger & prompted rewriter (handling corrections, follow-ups, topic shifts) | 📅 Planned |
+| **P0** | Project scaffolding, configuration, Pydantic schemas, unit tests, and README | ⚠️ Core verified; 62 tests pass; dependency pins and README rendering not verified |
+| **P1** | Approved-source knowledge-base ingestion, section chunking, metadata, and safety filter | ⚠️ Pipeline verified locally; 26 chunks generated below target size |
+| **P2** | Multilingual dense retrieval, BM25, RRF, and reranking | ⚠️ Retrieval verified; reranker used deterministic fallback in the tested environment |
+| **P3** | Patient-state ledger and prompted local rewriter | ⚠️ Rule baseline and mocked JSON path verified; live Ollama model not tested |
+
+### Verified local checks
+
+- Full tests: `python -m pytest tests -v` (62 passed)
+- P3 fixture diagnostic: `python debug_p3.py`
+- Retrieval benchmark: `python -c "from eval.retrieval_eval import run_evaluation; run_evaluation()"`
+- The retrieval benchmark has 104 questions and the current local knowledge base has 26 chunks. See `docs/retrieval_results.md` for measured results and backend details.
+- The local Ollama rewriter can be created with `StandaloneRewriter.from_config()`; when the local service is unavailable or returns invalid JSON, it falls back to deterministic rules.
+- Acceptance gaps remain: the dense vectors are held in memory rather than persisted to Qdrant/FAISS; the supplied dev set has 104 questions, not the planned 140; the neural reranker and live Ollama model have not been verified.
+- The neural reranker is optional and can be installed with `pip install -e ".[reranker]"`; without it, retrieval uses the documented deterministic fallback.
 
 ---
 

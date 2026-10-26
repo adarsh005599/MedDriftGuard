@@ -18,7 +18,8 @@ Rules:
    - "add": newly mentioned user facts (symptoms, durations, medications, allergies).
    - "retract": facts the user explicitly denies or corrects (e.g., "nahi bukhar nahi hai" -> retract fever).
    - "correct": replacement of a prior fact with a new one.
-5. NEVER infer a diagnosis. NEVER store facts the user did not say. NEVER output drug dosages.
+5. Every ledger update MUST include source_text copied exactly from USER_MSG. Never cite LEDGER or LAST_TURNS as the source of a new fact.
+6. NEVER infer a diagnosis. NEVER store facts the user did not say. NEVER output drug dosages.
 
 Return strictly valid JSON only:
 {
@@ -26,9 +27,9 @@ Return strictly valid JSON only:
   "detected_script": "en|devanagari|roman_hindi",
   "language": "en|hi",
   "topic_shift": false,
-  "ledger_updates": [
-    {"op": "add|retract|correct", "fact_type": "symptom|duration|medication_mentioned|allergy_mentioned|condition_mentioned|user_correction", "value": "<extracted string>"}
-  ]
+    "ledger_updates": [
+        {"op": "add|retract|correct", "fact_type": "age_group|symptom|duration|medication_mentioned|allergy_mentioned|condition_mentioned|user_correction", "value": "<extracted string>", "source_text": "<verbatim user text>"}
+    ]
 }
 """
 

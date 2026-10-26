@@ -7,9 +7,9 @@ Re-scores top candidate passages against the user query for high-precision final
 from __future__ import annotations
 
 import re
-from typing import List, Optional, Tuple
-from src.common.schemas import RetrievedChunk
+
 from src.common.logging import get_logger
+from src.common.schemas import RetrievedChunk
 
 logger = get_logger("retriever.reranker")
 
@@ -27,16 +27,17 @@ class CrossEncoderReranker:
     def _init_model(self) -> None:
         """Attempt to load cross-encoder model via fastembed or local encoder."""
         try:
-            from fastembed import TextCrossEncoder
-            self.reranker = TextCrossEncoder(model_name=self.model_name)
-            logger.info(f"Loaded TextCrossEncoder model: {self.model_name}")
-        except Exception:
+            from sentence_transformers import CrossEncoder
+
+            self.reranker = CrossEncoder(self.model_name, device="cpu")
+            logger.info(f"Loaded sentence-transformers CrossEncoder model: {self.model_name}")
+        except (ImportError, OSError, RuntimeError, ValueError):
             # Fallback to high-precision contextual scoring
             self.reranker = None
 
     def rerank(
-        self, query: str, candidates: List[RetrievedChunk], top_k: int = 5
-    ) -> List[RetrievedChunk]:
+        self, query: str, candidates: list[RetrievedChunk], top_k: int = 5
+    ) -> list[RetrievedChunk]:
         """
         Rerank candidate chunks against the query.
         Returns top_k chunks with updated scores and ranks.
@@ -47,7 +48,7 @@ class CrossEncoderReranker:
         if self.reranker is not None:
             try:
                 pairs = [(query, c.text) for c in candidates]
-                scores = list(self.reranker.rerank(pairs))
+                scores = self.reranker.predict(pairs, show_progress_bar=False)
                 indexed_scores = list(enumerate(scores))
                 indexed_scores.sort(key=lambda x: x[1], reverse=True)
                 reranked = []
@@ -57,23 +58,63 @@ class CrossEncoderReranker:
                     chunk.rank = rank
                     reranked.append(chunk)
                 return reranked
-            except Exception as e:
-                logger.warning(f"FastEmbed reranker failed: {e}. Using contextual scoring fallback.")
+            except (OSError, RuntimeError, ValueError) as e:
+                logger.warning(
+                    f"FastEmbed reranker failed: {e}. Using contextual scoring fallback."
+                )
 
         # Contextual scoring fallback
         # Filter common stopwords so they don't produce false matches in section titles
         stopwords = {
-            "what", "is", "a", "an", "the", "in", "on", "at", "to", "for", "of", "with",
-            "and", "or", "how", "why", "when", "where", "can", "should", "do", "does",
-            "are", "be", "hai", "hain", "ke", "ki", "ka", "ko", "mein", "se", "kya",
-            "kyu", "karein", "hota", "hoti", "hote", "aur", "ya", "par", "bhi"
+            "what",
+            "is",
+            "a",
+            "an",
+            "the",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "and",
+            "or",
+            "how",
+            "why",
+            "when",
+            "where",
+            "can",
+            "should",
+            "do",
+            "does",
+            "are",
+            "be",
+            "hai",
+            "hain",
+            "ke",
+            "ki",
+            "ka",
+            "ko",
+            "mein",
+            "se",
+            "kya",
+            "kyu",
+            "karein",
+            "hota",
+            "hoti",
+            "hote",
+            "aur",
+            "ya",
+            "par",
+            "bhi",
         }
         all_words = re.findall(r"\w+", query.lower())
-        query_words = set(w for w in all_words if w not in stopwords and len(w) > 2)
+        query_words = {word for word in all_words if word not in stopwords and len(word) > 2}
         if not query_words:
             query_words = set(all_words)
 
-        scored_candidates: List[Tuple[RetrievedChunk, float]] = []
+        scored_candidates: list[tuple[RetrievedChunk, float]] = []
         num_candidates = len(candidates)
 
         for idx, c in enumerate(candidates):
@@ -95,7 +136,7 @@ class CrossEncoderReranker:
 
         scored_candidates.sort(key=lambda x: x[1], reverse=True)
 
-        results: List[RetrievedChunk] = []
+        results: list[RetrievedChunk] = []
         for rank, (chunk, score) in enumerate(scored_candidates[:top_k], start=1):
             updated_chunk = chunk.model_copy()
             updated_chunk.score = round(float(score), 4)

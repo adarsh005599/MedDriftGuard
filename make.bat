@@ -3,7 +3,7 @@ REM Windows runner for MedDriftGuard make commands
 
 if "%1"=="setup" (
     python -m pip install --upgrade pip
-    python -m pip install -e .[dev]
+    python -m pip install -e .[dev,retrieval]
 ) else if "%1"=="test" (
     python -m pytest tests/unit -v
 ) else if "%1"=="test-all" (

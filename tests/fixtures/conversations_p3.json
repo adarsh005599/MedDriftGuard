@@ -124,7 +124,7 @@
           "user_message": "Can breakbone fever be dengue?",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["dengue awareness"],
+          "expected_active_symptoms": [],
           "query_must_contain": ["dengue"],
           "query_must_not_contain": []
         },
@@ -133,7 +133,7 @@
           "user_message": "What are its warning signs and causes?",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["dengue awareness"],
+          "expected_active_symptoms": [],
           "query_must_contain": ["dengue", "causes"],
           "query_must_not_contain": []
         }
@@ -185,7 +185,7 @@
           "user_message": "Leave that, by the way do you know about fever?",
           "expected_topic_shift": true,
           "expected_retractions": [],
-          "expected_active_symptoms": ["heartburn", "acid reflux", "fever"],
+          "expected_active_symptoms": ["heartburn", "acid reflux"],
           "query_must_contain": ["fever"],
           "query_must_not_contain": ["heartburn"]
         }
@@ -394,7 +394,7 @@
           "user_message": "dengue bukhar ke lakshan kya hote hain?",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["dengue awareness"],
+          "expected_active_symptoms": [],
           "query_must_contain": ["dengue"],
           "query_must_not_contain": []
         },
@@ -403,7 +403,7 @@
           "user_message": "iski home care aur bachaav kaise karein?",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["dengue awareness"],
+          "expected_active_symptoms": [],
           "query_must_contain": ["dengue", "home care"],
           "query_must_not_contain": []
         }
@@ -664,7 +664,7 @@
           "user_message": "डेंगू के गंभीर खतरे के लक्षण क्या हैं?",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["dengue awareness"],
+          "expected_active_symptoms": [],
           "query_must_contain": ["dengue"],
           "query_must_not_contain": []
         },
@@ -673,7 +673,7 @@
           "user_message": "इसके कारण और मच्छर से बचाव के उपाय",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["dengue awareness"],
+          "expected_active_symptoms": [],
           "query_must_contain": ["dengue", "causes"],
           "query_must_not_contain": []
         }
@@ -742,7 +742,7 @@
           "user_message": "आधे सिर में माइग्रेन का तेज दर्द है।",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["headache", "migraine"],
+          "expected_active_symptoms": ["migraine"],
           "query_must_contain": ["migraine"],
           "query_must_not_contain": []
         },
@@ -751,7 +751,7 @@
           "user_message": "इसके लक्षण और कारण क्या हैं?",
           "expected_topic_shift": false,
           "expected_retractions": [],
-          "expected_active_symptoms": ["headache", "migraine"],
+          "expected_active_symptoms": ["migraine"],
           "query_must_contain": ["migraine", "causes"],
           "query_must_not_contain": []
         }

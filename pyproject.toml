@@ -43,12 +43,13 @@ dev = [
     "black>=24.2.0",
 ]
 retrieval = [
+    "fastembed>=0.3.4",
+]
+reranker = [
     "sentence-transformers>=2.5.0",
-    "qdrant-client>=1.8.0",
-    "torch>=2.1.0",
 ]
 all = [
-    "meddriftguard[dev,retrieval]",
+    "meddriftguard[dev,retrieval,reranker]",
 ]
 
 [tool.pytest.ini_options]

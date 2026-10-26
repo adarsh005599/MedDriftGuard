@@ -1,5 +1,15 @@
 # Phase 1 Completion Report: Knowledge-Base Ingestion Pipeline
 
+## Verification Update — 2026-10-26
+
+This update supersedes historical test counts and any blanket dosage/license compliance claims below.
+
+- Ingestion now enforces the `Approved` source registry, exact registry license, and allowed source URL host. Unregistered and mismatched sources are skipped.
+- Command run: `python -m pytest tests/unit/test_kb_ingest.py -q` — **10 passed**.
+- Real ingestion of the seven local HTML files into a temporary directory produced **26 unique, schema-valid chunks** from MedlinePlus, MoHFW, and WHO. The implemented dosage patterns found no dosage strings in those outputs.
+- Acceptance gap: these chunks measured about **60–134 whitespace words**, below the 250–350 target; short input sections were not padded or joined across headings.
+- Limitations: this is only seven local English pages; no live download was tested. License terms were read from the registry but not independently legally audited. Pattern checks do not prove all possible dosing instructions are absent.
+
 ## 1. What Was Built
 - **Ingestion Pipeline (`kb/ingest.py`)**: End-to-end pipeline reading approved medical documents, cleaning HTML, enforcing license validation, chunking, deduplicating, and saving validated records to `kb/chunks.jsonl`.
 - **Noise & Clutter Cleaner (`kb/cleaner.py`)**: BeautifulSoup-based parser stripping `<script>`, `<style>`, `<nav>`, `<footer>`, `<aside>`, and ads while partitioning text by headings (`h1`–`h4`).
@@ -13,7 +23,9 @@
 - **Preserved Topic and Section Preambles**: Prepending `[Topic | Section]` inside each chunk gives the dense embedding model and generator precise grounding context.
 - **Mandatory License Gate**: Any source in `kb/SOURCES.md` lacking an explicit public-domain or open-access license is skipped automatically with a logged warning.
 
-## 3. Metrics & Test Results
+## 3. Historical P1 Snapshot (Superseded)
+
+The original count and blanket dosage statement below describe an earlier test set. Current verification above checks the implemented patterns but does not prove all medication instructions are absent. Current chunks are below the planned target size because the local source pages are short.
 Acceptance command executed:
 ```bash
 python -m pytest tests/ -v

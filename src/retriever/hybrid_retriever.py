@@ -13,14 +13,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal
 
+import yaml
+
+from src.common.logging import get_logger
 from src.common.schemas import RetrievedChunk
 from src.retriever.bm25_search import BM25Retriever
 from src.retriever.dense_search import DenseRetriever
 from src.retriever.fusion import reciprocal_rank_fusion
 from src.retriever.reranker import CrossEncoderReranker
-from src.common.logging import get_logger
 
 logger = get_logger("retriever.hybrid")
 
@@ -35,30 +37,62 @@ class HybridRetriever:
 
     def __init__(
         self,
-        chunks: Optional[List[RetrievedChunk]] = None,
+        chunks: list[RetrievedChunk] | None = None,
         chunks_path: Path = Path("kb/chunks.jsonl"),
-        mode: RetrieverMode = "hybrid_rerank",
-        rrf_k: int = 60,
-        dense_model_name: str = "BAAI/bge-small-en-v1.5",
+        mode: RetrieverMode | None = None,
+        rrf_k: int | None = None,
+        dense_model_name: str | None = None,
+        reranker_model_name: str | None = None,
+        config_path: Path = Path("configs/retriever.yaml"),
     ):
-        self.mode = mode
-        self.rrf_k = rrf_k
+        config = self._load_config(config_path)
+        retriever_config = config.get("retriever", {})
+        dense_config = config.get("dense", {})
+        sparse_config = config.get("sparse", {})
+        reranker_config = config.get("reranker", {})
+
+        self.mode = mode or retriever_config.get("type", "hybrid")
+        self.rrf_k = rrf_k if rrf_k is not None else retriever_config.get("rrf_k", 60)
         self.chunks = chunks if chunks is not None else self._load_chunks(chunks_path)
 
         # Initialize sub-components
-        self.bm25 = BM25Retriever(self.chunks)
-        self.dense = DenseRetriever(self.chunks, model_name=dense_model_name)
-        self.reranker = CrossEncoderReranker()
-        logger.info(f"Initialized HybridRetriever with {len(self.chunks)} chunks in '{mode}' mode.")
+        self.bm25 = BM25Retriever(
+            self.chunks,
+            k1=sparse_config.get("k1", 1.5),
+            b=sparse_config.get("b", 0.75),
+        )
+        self.dense = DenseRetriever(
+            self.chunks,
+            model_name=dense_model_name
+            or dense_config.get(
+                "model_name", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            ),
+        )
+        self.reranker = CrossEncoderReranker(
+            model_name=reranker_model_name
+            or reranker_config.get("model_name", "BAAI/bge-reranker-large")
+        )
+        logger.info(
+            f"Initialized HybridRetriever with {len(self.chunks)} chunks in '{self.mode}' mode."
+        )
 
     @staticmethod
-    def _load_chunks(chunks_path: Path) -> List[RetrievedChunk]:
+    def _load_config(config_path: Path) -> dict:
+        if not config_path.exists():
+            logger.warning(f"Retriever config {config_path} not found; using built-in defaults.")
+            return {}
+        with config_path.open("r", encoding="utf-8") as config_file:
+            config = yaml.safe_load(config_file) or {}
+        return config
+
+    @staticmethod
+    def _load_chunks(chunks_path: Path) -> list[RetrievedChunk]:
         """Loads and parses chunks from JSONL file."""
         if not chunks_path.exists():
             logger.warning(f"Chunks file {chunks_path} not found. Returning empty list.")
             return []
 
-        chunks: List[RetrievedChunk] = []
+        chunks: list[RetrievedChunk] = []
         with chunks_path.open("r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
@@ -70,8 +104,8 @@ class HybridRetriever:
         self,
         standalone_query: str,
         k: int = 5,
-        mode_override: Optional[RetrieverMode] = None,
-    ) -> List[RetrievedChunk]:
+        mode_override: RetrieverMode | None = None,
+    ) -> list[RetrievedChunk]:
         """
         Retrieve the top-k most relevant knowledge base chunks for a standalone query.
 
@@ -91,7 +125,7 @@ class HybridRetriever:
             )
 
         cleaned_query = standalone_query.strip()
-        if not cleaned_query:
+        if not cleaned_query or k <= 0 or not self.chunks:
             return []
 
         active_mode = mode_override or self.mode

@@ -9,11 +9,11 @@ Devanagari Hindi, and Roman Hinglish.
 from __future__ import annotations
 
 import re
-from typing import Dict, List, Optional, Set, Tuple
+
 from src.common.schemas import LedgerUpdate
 
 # Comprehensive multilingual lexicon for symptoms
-SYMPTOM_LEXICON: Dict[str, str] = {
+SYMPTOM_LEXICON: dict[str, str] = {
     # Fever
     "fever": "fever",
     "high fever": "high fever",
@@ -23,7 +23,6 @@ SYMPTOM_LEXICON: Dict[str, str] = {
     "tez bukhar": "high fever",
     "बुखार": "fever",
     "तेज बुखार": "high fever",
-    
     # Cough
     "cough": "cough",
     "dry cough": "dry cough",
@@ -34,7 +33,6 @@ SYMPTOM_LEXICON: Dict[str, str] = {
     "balgam wali khansi": "productive cough",
     "खांसी": "cough",
     "सूखी खांसी": "dry cough",
-    
     # Headache / Migraine
     "headache": "headache",
     "migraine": "migraine",
@@ -42,10 +40,10 @@ SYMPTOM_LEXICON: Dict[str, str] = {
     "sar dard": "headache",
     "sir dard": "headache",
     "tez sar dard": "severe headache",
+    "severe headache": "severe headache",
     "sir me dard": "headache",
     "सिरदर्द": "headache",
     "माइग्रेन": "migraine",
-
     # Acidity & GERD
     "acidity": "acidity and acid reflux",
     "heartburn": "acidity and heartburn",
@@ -57,7 +55,6 @@ SYMPTOM_LEXICON: Dict[str, str] = {
     "khatti dakar": "acidity and acid reflux",
     "सीने में जलन": "acidity and heartburn",
     "एसिडिटी": "acidity and acid reflux",
-
     # Diarrhoea & Dehydration
     "diarrhoea": "diarrhoea",
     "diarrhea": "diarrhoea",
@@ -68,7 +65,6 @@ SYMPTOM_LEXICON: Dict[str, str] = {
     "pani ki kami": "dehydration",
     "दस्त": "diarrhoea",
     "डिहाइड्रेशन": "dehydration",
-
     # Hypertension
     "high blood pressure": "hypertension",
     "high bp": "hypertension",
@@ -76,7 +72,6 @@ SYMPTOM_LEXICON: Dict[str, str] = {
     "high bp reading": "hypertension",
     "हाई बीपी": "hypertension",
     "उच्च रक्तचाप": "hypertension",
-
     # Dengue
     "dengue": "dengue awareness",
     "breakbone fever": "dengue awareness",
@@ -106,17 +101,39 @@ DURATION_PATTERNS = [
 
 # Topic shift indicators
 TOPIC_SHIFT_PATTERNS = [
-    re.compile(r"\b(?:forget\s+that|leave\s+that|different\s+question|by\s+the\s+way|another\s+thing|on\s+another\s+note)\b", re.IGNORECASE),
-    re.compile(r"\b(?:chalo\s+ye\s+chhodo|ye\s+chodo|ye\s+chhodo|dusra\s+sawal|alag\s+baat|ek\s+aur\s+baat)\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?:forget\s+that|leave\s+that|different\s+question|by\s+the\s+way|another\s+thing|on\s+another\s+note)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:chalo\s+ye\s+chhodo|ye\s+chodo|ye\s+chhodo|dusra\s+sawal|alag\s+baat|ek\s+aur\s+baat)\b",
+        re.IGNORECASE,
+    ),
     re.compile(r"(यह\s+छोड़ो|दूसरा\s+सवाल|एक\s+और\s+बात)", re.IGNORECASE),
 ]
 
 # Pronoun follow-up markers
 PRONOUN_FOLLOWUP_PATTERNS = [
-    re.compile(r"\b(?:its|it|this|that)\s+(?:treatment|home\s+care|cure|causes?|remedy|diet|advice|warning\s+signs)\b", re.IGNORECASE),
-    re.compile(r"\b(?:iska|iski|iske|uska|uski|uske)\s+(?:ilaj|upay|home\s+care|dawa|lakshan|karan|bachaav|bachav)\b", re.IGNORECASE),
-    re.compile(r"\b(?:isme|usme|issme|ussme)\s+(?:kya\s+(?:karein|kare|karna\s+chahiye)|aaram|doctor|bachav)\b", re.IGNORECASE),
-    re.compile(r"(इसका\s+इलाज|इसके\s+घरेलू\s+उपाय|इसके\s+उपाय|इसमें\s+क्या\s+करें|इसके\s+लक्षण|इसके\s+कारण|इसके\s+नियम|इसके\s+बचाव)", re.IGNORECASE),
+    re.compile(
+        r"\b(?:its|it|this|that)\s+(?:treatment|home\s+care|cure|causes?|remedy|diet|advice|warning\s+signs)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:iska|iski|iske|uska|uski|uske)\s+(?:ilaj|upay|home\s+care|dawa|lakshan|karan|bachaav|bachav)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:isme|usme|issme|ussme)\s+(?:kya\s+(?:karein|kare|karna\s+chahiye)|aaram|doctor|bachav)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"(इसका\s+इलाज|इसके\s+घरेलू\s+उपाय|इसके\s+उपाय|इसमें\s+क्या\s+करें|इसके\s+लक्षण|इसके\s+कारण|इसके\s+नियम|इसके\s+बचाव)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"(?:इसका|इसके|इसमें|उसका|उसके|उसमें).{0,24}(?:लक्षण|कारण|खतरे|चेतावनी|देखभाल|उपाय)",
+        re.IGNORECASE,
+    ),
 ]
 
 
@@ -140,48 +157,64 @@ class RuleBasedExtractor:
         return False
 
     @classmethod
-    def extract_updates(cls, text: str) -> List[LedgerUpdate]:
+    def extract_updates(cls, text: str) -> list[LedgerUpdate]:
         """
         Extract fact additions, retractions, and corrections from patient text.
         """
-        updates: List[LedgerUpdate] = []
+        updates: list[LedgerUpdate] = []
         text_lower = text.lower()
-
-        # Step 1: Detect retractions (negations)
-        retracted_symptoms: Set[str] = set()
-
-        for neg_pat in NEGATION_PATTERNS:
-            for match in neg_pat.finditer(text):
-                negated_phrase = match.group(1).lower().strip()
-                for raw_sym, canonical in SYMPTOM_LEXICON.items():
-                    if raw_sym in negated_phrase:
-                        retracted_symptoms.add(canonical)
-                        updates.append(
-                            LedgerUpdate(
-                                op="retract",
-                                fact_type="symptom",
-                                value=canonical,
-                                source_text=match.group(0),
-                            )
-                        )
-
-        # Step 2: Detect affirmed symptoms (not negated)
-        for raw_sym, canonical in SYMPTOM_LEXICON.items():
-            if raw_sym in text_lower:
-                # If this symptom was explicitly negated in this utterance, skip adding it
-                if canonical in retracted_symptoms:
+        mentions: list[tuple[int, int, str, str]] = []
+        for raw_sym, canonical in sorted(
+            SYMPTOM_LEXICON.items(), key=lambda item: len(item[0]), reverse=True
+        ):
+            pattern = re.compile(rf"(?<!\w){re.escape(raw_sym)}(?!\w)", re.IGNORECASE)
+            for match in pattern.finditer(text):
+                if any(
+                    match.start() < end and match.end() > start for start, end, _, _ in mentions
+                ):
                     continue
+                mentions.append((match.start(), match.end(), raw_sym, canonical))
 
-                # Avoid duplicate additions in the same turn
-                if not any(u.op == "add" and u.value == canonical for u in updates):
-                    updates.append(
-                        LedgerUpdate(
-                            op="add",
-                            fact_type="symptom",
-                            value=canonical,
-                            source_text=text,
-                        )
-                    )
+        mentions.sort(key=lambda item: item[0])
+        affirmed_symptoms: set[str] = set()
+        retracted_symptoms: set[str] = set()
+        is_question = bool(
+            re.search(
+                r"\?|\b(?:what|when|where|why|how|can|should|does|is)\b|क्या|कब|कैसे",
+                text,
+                re.IGNORECASE,
+            )
+        )
+        negation_before = re.compile(
+            r"(?:\bno\s+longer\s+(?:have\s+)?|\bdo\s+not\s+have\s+|\bdon't\s+have\s+|"
+            r"\bno\s+|\bnot\s+|\bwithout\s+|\b(?:nahi|nhi|na)\s+|नहीं\s*)$",
+            re.IGNORECASE,
+        )
+        negation_after = re.compile(
+            r"^\s*(?:anymore|no\s+longer|is\s+gone|has\s+gone|nahi(?:\s+hai)?|nhi(?:\s+hai)?|"
+            r"नहीं(?:\s+है)?)",
+            re.IGNORECASE,
+        )
+
+        for start, end, raw_sym, canonical in mentions:
+            prefix = text_lower[max(0, start - 40) : start]
+            suffix = text_lower[end : end + 24]
+            is_negated = bool(negation_before.search(prefix) or negation_after.search(suffix))
+            if is_question and not is_negated:
+                continue
+            operation = "retract" if is_negated else "add"
+            target = retracted_symptoms if is_negated else affirmed_symptoms
+            if canonical in target:
+                continue
+            target.add(canonical)
+            updates.append(
+                LedgerUpdate(
+                    op=operation,
+                    fact_type="symptom",
+                    value=canonical,
+                    source_text=text[start:end],
+                )
+            )
 
         # Step 3: Detect durations
         for dur_pat in DURATION_PATTERNS:
