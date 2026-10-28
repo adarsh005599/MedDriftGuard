@@ -185,6 +185,36 @@ class VerifiedAnswer(BaseModel):
     citations: list[str] = Field(default_factory=list, description="Unique chunk IDs cited in the answer")
 
 
+class GeneratedAnswer(BaseModel):
+    """Structured evidence-bound answer returned by the P4 generator."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    short_answer: str = Field(default="")
+    general_information: str = Field(default="")
+    self_care: str = Field(default="")
+    when_to_see_doctor: str = Field(default="")
+    citations: list[str] = Field(default_factory=list)
+    disclaimer: str = Field(default="This is general health information, not a diagnosis.")
+    abstained: bool = False
+    abstention_reason: Optional[str] = None
+
+    def to_text(self) -> str:
+        """Render the structured sections without dropping their inline citations."""
+        sections = [
+            self.short_answer,
+            self.general_information,
+            self.self_care,
+            self.when_to_see_doctor,
+        ]
+        body = "\n\n".join(section.strip() for section in sections if section.strip())
+        if self.abstained:
+            body = self.abstention_reason or body or "I do not have enough evidence to answer safely."
+        if self.disclaimer:
+            body = f"{body}\n\n{self.disclaimer}".strip()
+        return body
+
+
 class PipelineTrace(BaseModel):
     """
     Comprehensive execution trace for a single conversation turn.

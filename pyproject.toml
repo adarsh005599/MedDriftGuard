@@ -48,8 +48,11 @@ retrieval = [
 reranker = [
     "sentence-transformers>=2.5.0",
 ]
+ui = [
+    "streamlit>=1.39.0",
+]
 all = [
-    "meddriftguard[dev,retrieval,reranker]",
+    "meddriftguard[dev,retrieval,reranker,ui]",
 ]
 
 [tool.pytest.ini_options]

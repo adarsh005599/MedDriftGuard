@@ -1,10 +1,10 @@
 # MedDriftGuard Makefile
 
-.PHONY: setup test lint eval clean run-api
+.PHONY: setup test lint eval clean run-api demo
 
 setup:
 	python -m pip install --upgrade pip
-	python -m pip install -e .[dev,retrieval]
+	python -m pip install -e ".[dev,retrieval,ui]"
 
 test:
 	python -m pytest tests/unit -v
@@ -25,6 +25,9 @@ eval:
 
 run-api:
 	uvicorn src.api.main:app --reload --host 127.0.0.1 --port 8000
+
+demo:
+	python demo.py
 
 clean:
 	rm -rf __pycache__ .pytest_cache .ruff_cache build dist *.egg-info

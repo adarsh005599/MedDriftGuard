@@ -11,7 +11,22 @@ This update supersedes the historical claims below, especially the claim that th
 - Limitation: live Ollama service/model execution has not been tested. Pattern-based rule fallback recognizes only its configured lexicon and cannot understand arbitrary medical topics.
 - Acceptance status: implementation and offline tests pass, but live local-model behavior remains unverified; the deterministic fallback does not extract every documented fact type on its own.
 
-## 1. What Was Built
+## P4/P5 Verification Update — 2026-10-27
+
+- P4 adds a structured answer contract, local Ollama generator configured from `configs/pipeline.yaml`, evidence-only prompts, last-two-turn context, inline citation validation, disclaimer enforcement, and abstention on missing evidence or invalid model output.
+- P5 adds mocked/local Ollama claim splitting, CPU NLI scoring from `configs/verifier.yaml`, cited and top-three passage checks, one optional regeneration callback, unsupported-claim filtering, safe abstention, policy checks for dose-like text/diagnostic wording/citations/disclaimer, and optional `PipelineTrace` verdict recording.
+- P4/P5 focused tests: `python -m pytest tests/unit/test_generator_verifier.py -q` — **8 passed** using mock clients and scorers.
+- P4/P5 changed-file Ruff and Black checks pass.
+- `docs/verifier_calibration.csv` is the blank human-labeling template. No 100-claim calibration set was supplied, so precision/recall at three thresholds is **not measured**.
+- Live Ollama generation and the configured DeBERTa NLI model were **not run** in this verification. The tests validate interface, policies, and orchestration using mocks; no claim is made about real-model accuracy.
+
+## Presentation Demo Verification — 2026-10-27
+
+- Windows command from the project directory: `cmd /c make.bat demo`. Interactive question: `python demo.py --interactive`.
+- The built-in demo was run successfully. Real local retrieval returned `med_cough_0002` for the cough example; deterministic mock generation produced a cited excerpt and the mock verifier marked one claim supported. An explicit empty-evidence scenario returned a safe abstention.
+- Interactive mode was also run with the cough question and completed successfully. Demo unit tests cover retrieval handoff, citations, verification, and missing-evidence abstention; final full suite: **72 passed, 0 failed**.
+- Demo generation and claim scoring are mocks. Live Ollama and NLI model execution remain unverified.
+
 
 ### Patient-State Ledger (`src/ledger/patient_ledger.py`)
 A versioned, in-memory memory book that records **only what the patient explicitly stated**.
@@ -108,19 +123,7 @@ User Message (EN / Roman Hinglish / Devanagari)
 
 ### Unit Tests
 
-Current full-suite result: **62 passed, 0 failed**. The previous 40-test snapshot was from the earlier phase state and is superseded.
-
-```
-tests/unit/test_api.py                 [  1 passed ]
-tests/unit/test_kb_ingest.py           [ 10 passed ]
-tests/unit/test_ledger.py              [  6 passed ]
-tests/unit/test_retrieval_eval.py      [  2 passed ]
-tests/unit/test_retriever.py           [ 11 passed ]
-tests/unit/test_rewriter.py            [ 14 passed ]
-tests/unit/test_schemas.py             [ 18 passed ]
-                                         -----------
-                                TOTAL:   62 passed, 0 failed
-```
+Current full-suite result: **70 passed, 0 failed** on Python 3.12.0, including the eight P4/P5 mock tests.
 
 **P3 Ledger tests (`test_ledger.py`):**
 

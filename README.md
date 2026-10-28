@@ -156,8 +156,8 @@ meddriftguard/
 ### 2. Setup
 Clone the repository and install dependencies:
 ```bash
-# Using pip (tests and CPU retrieval backend)
-pip install -e ".[dev,retrieval]"
+# Using pip (tests, CPU retrieval backend, and local website)
+pip install -e ".[dev,retrieval,ui]"
 
 # On Linux/macOS
 make setup
@@ -185,6 +185,42 @@ uvicorn src.api.main:app --reload --host 127.0.0.1 --port 8000
 ```
 Open your browser to `http://127.0.0.1:8000/health` to confirm the API is running.
 
+### 5. Running the presentation website (Windows)
+
+Open two PowerShell terminals in the project folder. In the first terminal run:
+
+```powershell
+python -m uvicorn src.api.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+In the second terminal run:
+
+```powershell
+python -m streamlit run src\ui\streamlit_app.py
+```
+
+Open `http://localhost:8501`. The website is explicitly **DEMO MODE**: it uses
+real local retrieval but deterministic/mock generation and verification. Try a
+cough question to inspect real retrieved sources, then try an out-of-scope
+question such as `How does a warp-drive engine work?` to see safe abstention.
+
+### 6. Running the Terminal Demo (Windows)
+
+From the project folder in the VS Code terminal:
+
+```powershell
+python -m pip install -e ".[dev,retrieval]"
+.\make.bat demo
+```
+
+The demo runs a safe cough example and an empty-evidence abstention example. To enter your own question interactively:
+
+```powershell
+python demo.py --interactive
+```
+
+Retrieval uses the checked-in local KB and configured multilingual embedding model. To keep the demo runnable without model servers, answer generation and claim scoring use deterministic mock clients that demonstrate the P4/P5 flow; this is not a live LLM/NLI evaluation. The demo prints this limitation before running. The built-in examples were run successfully on 2026-10-27: the cough answer cited `med_cough_0002` and passed the mock check; the empty-evidence example abstained.
+
 ---
 
 ## 📋 Implementation Roadmap
@@ -198,13 +234,14 @@ Open your browser to `http://127.0.0.1:8000/health` to confirm the API is runnin
 
 ### Verified local checks
 
-- Full tests: `python -m pytest tests -v` (62 passed)
+- Current automated suite: `python -m pytest tests -q` (92 tests; see `docs/submission_status.md` for the dated verification record)
 - P3 fixture diagnostic: `python debug_p3.py`
 - Retrieval benchmark: `python -c "from eval.retrieval_eval import run_evaluation; run_evaluation()"`
 - The retrieval benchmark has 104 questions and the current local knowledge base has 26 chunks. See `docs/retrieval_results.md` for measured results and backend details.
 - The local Ollama rewriter can be created with `StandaloneRewriter.from_config()`; when the local service is unavailable or returns invalid JSON, it falls back to deterministic rules.
 - Acceptance gaps remain: the dense vectors are held in memory rather than persisted to Qdrant/FAISS; the supplied dev set has 104 questions, not the planned 140; the neural reranker and live Ollama model have not been verified.
 - The neural reranker is optional and can be installed with `pip install -e ".[reranker]"`; without it, retrieval uses the documented deterministic fallback.
+- The presentation website is local-only and explicitly marked DEMO MODE. It uses real local retrieval, but its generator and verifier are deterministic mocks.
 
 ---
 
