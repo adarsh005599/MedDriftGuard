@@ -18,6 +18,9 @@ htmlcov/
 
 # Local model weights and embeddings cache
 kb/index/
+generated_indexes/
+*.faiss
+*.faiss.json
 *.pkl
 *.bin
 

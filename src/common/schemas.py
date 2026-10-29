@@ -110,6 +110,14 @@ class RetrievedChunk(BaseModel):
     text: str = Field(..., min_length=10, description="Cleaned chunk text content")
     score: Optional[float] = Field(default=None, description="Retrieval or reranking score")
     rank: Optional[int] = Field(default=None, ge=1, description="Rank position in retrieval output")
+    # Optional document-level provenance used by imported PDF/FAISS indexes.
+    # Existing curated KB JSONL remains backwards compatible because these fields
+    # are intentionally optional.
+    source_id: Optional[str] = Field(default=None, description="Stable approved source identifier")
+    source_title: Optional[str] = Field(default=None, description="Human-readable source title")
+    document_id: Optional[str] = Field(default=None, description="Stable source document identifier")
+    page: Optional[int] = Field(default=None, ge=1, description="1-based source page number")
+    chunk_position: Optional[int] = Field(default=None, ge=0, description="Zero-based chunk position")
 
     @field_validator("license")
     @classmethod

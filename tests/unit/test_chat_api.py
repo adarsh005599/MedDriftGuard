@@ -14,8 +14,11 @@ class FakeChatService:
                 {
                     "chunk_id": "chunk_01",
                     "source": "Test source",
+                    "source_id": None,
+                    "source_title": None,
                     "url": "https://example.com/source",
                     "section": "Overview",
+                    "page": None,
                 }
             ],
             "abstained": False,

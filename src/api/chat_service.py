@@ -143,8 +143,11 @@ class DemoChatService:
             {
                 "chunk_id": chunk.chunk_id,
                 "source": chunk.source,
+                "source_id": chunk.source_id,
+                "source_title": chunk.source_title,
                 "url": chunk.url,
                 "section": chunk.section,
+                "page": chunk.page,
                 "topic": chunk.topic,
                 "license": chunk.license,
                 "excerpt": chunk.text,

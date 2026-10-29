@@ -1,6 +1,6 @@
 # MedDriftGuard Submission Status
 
-Audit date: 28 October 2026. This document records what was observed in the
+Audit date: 29 October 2026. This document records what was observed in the
 repository and what was run locally during this audit. It does not treat planned
 features or historical documentation as completed work.
 
@@ -30,6 +30,7 @@ uses mock generation and mock claim scoring.
 | Terminal demo | `python demo.py` completed on 28 October 2026. It retrieved real local chunks, returned a cited deterministic excerpt, and safely abstained in the simulated no-evidence example. | Demonstrable offline prototype. |
 | FastAPI + Streamlit UI | `GET /health`, demo-mode `POST /chat`, and a local Streamlit entry point are present. | Presentation prototype; see limitations. |
 | M1 data preparation | Synthetic-data generator, validator, and evaluator scripts exist. | Not trained or evaluated with an adapter. |
+| Legacy PDF/FAISS boundary | Optional provenance-aware PDF extraction, stable chunk metadata, and JSON-sidecar FAISS persistence were added and covered by focused tests. | Implemented as an opt-in adapter; live PDF/FAISS execution requires the `pdf` extra and was not run in this environment. |
 
 ## Retrieval metrics actually measured
 
@@ -55,15 +56,15 @@ answer-quality, or multi-turn-drift results.
 
 ## Test and demo evidence
 
-`python -m pytest --collect-only -q` lists 92 tests after the input-safety and
-UI/API additions. On 28 October 2026, all 92 passed when run in complete test-file
-groups (79 non-retrieval tests, 2 retrieval-evaluation tests, and 11 retriever
-tests). The M1 validator was corrected so it checks unsafe user text
+`python -m pytest --collect-only -q` lists 96 tests after the input-safety and
+UI/API additions. On 29 October 2026, the full 96-test suite passed. The M1
+validator was corrected so it checks unsafe user text
 before stale cross-field data, while still reporting an invalid ledger fact type
 as a schema error. This preserves the training-data safety rule without
 weakening the test.
 
-The two terminal-demo tests also pass, and `python demo.py` completed
+The focused integration/API/schema run passed 22 tests, and the final full
+suite passed 96 tests. The two terminal-demo tests also pass, and `python demo.py` completed
 successfully. On this Windows environment, FastEmbed can leave worker processes
 attached to a terminal after retrieval tests; that affects terminal shutdown,
 not the 13 passing retriever/evaluation test assertions.
@@ -72,13 +73,21 @@ Final API smoke checks also confirmed: a cough question returned citation
 `med_cough_0002`; an out-of-scope warp-drive question safely abstained with no
 sources; and `ttt` safely requested a meaningful question with no sources.
 
+## Independent verification — 29 October 2026
+
+- `python -m pytest tests -q` passed all 96 collected tests after the final PDF metadata fix.
+- `python -m compileall -q src tests` completed successfully, and `git diff --check` reported no whitespace errors.
+- The API launched on `http://127.0.0.1:8000`; `/health` returned `healthy`.
+- Streamlit launched on `http://127.0.0.1:8501`. The rendered UI showed the DEMO MODE badge, supported cough example, one evidence card, and no literal raw HTML. The unsupported warp-drive example showed safe abstention and no evidence cards.
+- A live supported API response returned citation `med_cough_0002` and exactly one source with the same chunk ID, MedlinePlus source, URL, and section. The unsupported response returned `abstained: true` with zero citations and zero sources.
+- A live Roman Hinglish request detected `roman_hindi` / `hi`; a follow-up in the same conversation returned supported cough evidence. Unit tests cover Devanagari detection, topic shifts, corrections, retractions, session isolation, claim verification, and safe abstention.
+- The PDF/FAISS adapter is optional and not enabled by default. Tests cover provenance rejection, deterministic chunk splitting, empty-index behavior, and empty-index persistence rejection; they do not exercise live PDF extraction or FAISS save/load/search because those optional dependencies were not installed.
+- The configured emergency lexicon is not connected to the running API/UI. Emergency triage must not be claimed as implemented.
+
 ## Final pre-commit review — 28 October 2026
 
 - `git diff --check` reported no whitespace errors.
-- The complete 92-test suite was verified in test-file groups because the local
-  FastEmbed backend can keep Windows worker processes attached after retrieval
-  tests. The groups were 79 non-retrieval tests, 2 retrieval-evaluation tests,
-  and 11 retriever tests; all passed.
+- The complete 96-test suite was verified with `python -m pytest tests -q`.
 - `python demo.py` completed with a cited local cough answer and a safe
   no-evidence abstention.
 - Streamlit 1.66.1 was installed, and the website started locally in headless
@@ -101,11 +110,13 @@ sources; and `ttt` safely requested a meaningful question with no sources.
   have not been verified in this audit.
 - The rewriter has rule-based behavior and an optional Ollama client. Its live
   Ollama path has not been run; the rule lexicon covers only configured topics.
-- Dense vectors are built in memory. Despite configuration references, no
-  Qdrant or FAISS persisted index is implemented here.
+- The default dense vectors are built in memory. Optional FAISS persistence is
+  now available through `src/retriever/faiss_index.py`, but it is not enabled by
+  default and was not live-tested without the optional dependency.
 - The neural cross-encoder reranker was not loaded in the measured evaluation.
-- `src/triage`, `src/pipeline`, and `src/ui` contain package stubs, not an
-  integrated triage gate, end-to-end service pipeline, or user interface.
+- `src/triage` and `src/pipeline` contain package stubs, not an integrated
+  triage gate or end-to-end service pipeline. `src/ui` contains the working
+  Streamlit presentation adapter.
 - The FastAPI chat endpoint and Streamlit page are presentation-demo adapters.
   They use the same deterministic generator and verifier as `demo.py`, not a
   live medical model.
@@ -127,6 +138,9 @@ sources; and `ttt` safely requested a meaningful question with no sources.
   faithfulness, or reduced conversational drift.
 - The product is for general health information only; it must not be presented
   as a diagnosis or dosing tool.
+- The configured emergency lexicon is not connected to the demo runtime. Do not
+  claim emergency detection or emergency response behavior until a triage gate
+  is implemented and tested.
 - `write_phase3_doc.py` is a one-off untracked document generator whose output
   already exists in `docs/phase_3.md`; retain it locally or remove it later, but
   do not include it in the proposed commit.
@@ -138,6 +152,9 @@ From the project root in PowerShell:
 ```powershell
 # Install the dependencies used by tests, CPU retrieval, and the local UI
 python -m pip install -e ".[dev,retrieval,ui]"
+
+# Optional only: approved PDF extraction and FAISS persistence
+python -m pip install -e ".[pdf]"
 
 # Run the complete suite
 python -m pytest tests -q

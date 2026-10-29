@@ -33,8 +33,11 @@ class ChatRequest(BaseModel):
 class CitationSource(BaseModel):
     chunk_id: str
     source: str
+    source_id: str | None = None
+    source_title: str | None = None
     url: str
     section: str
+    page: int | None = None
     topic: str | None = None
     license: str | None = None
     excerpt: str | None = None

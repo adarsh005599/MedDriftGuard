@@ -51,8 +51,12 @@ reranker = [
 ui = [
     "streamlit>=1.39.0",
 ]
+pdf = [
+    "PyMuPDF>=1.24.0",
+    "faiss-cpu>=1.8.0",
+]
 all = [
-    "meddriftguard[dev,retrieval,reranker,ui]",
+    "meddriftguard[dev,retrieval,reranker,ui,pdf]",
 ]
 
 [tool.pytest.ini_options]

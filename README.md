@@ -18,7 +18,7 @@ In multilingual and code-mixed settings—such as Indian patients communicating 
 **MedDriftGuard** solves this problem by introducing a novel, decoupled architecture:
 - **Patient-State Ledger**: An explicit, versioned, and editable record of user-stated facts (symptoms, duration, allergies), isolated from the medical evidence store.
 - **Standalone Current-Turn Rewriter**: Reformulates the user's latest query into a focused English search query without history bloat.
-- **Deterministic Red-Flag Triage Gate**: Immediately intercepts medical emergencies (chest pain, stroke signs, severe trauma) before any LLM processing.
+- **Planned Red-Flag Triage Gate**: The safety design includes deterministic emergency interception, but the current demo repository does not yet implement the triage runtime.
 - **Evidence-Bound Generator & Claim Verifier**: Constrains generation strictly to retrieved authoritative evidence and verifies every atomic claim with an NLI entailment model.
 
 ---
@@ -35,7 +35,7 @@ flowchart TD
 
     UserMsg["👤 User Message<br/>(English / Devanagari / Roman Hinglish)"]:::core
     
-    Triage{"🚨 Red-Flag Triage Gate<br/>(Deterministic Lexicon + Classifier)"}:::emergency
+    Triage{"🚧 Planned Red-Flag Triage Gate<br/>(Not implemented in current demo)"}:::emergency
     EmergencyAlert["🚑 Safe Emergency Response<br/>(Call 112 / Ambulance 108 & Stop)"]:::emergency
 
     Rewriter["🔄 Query Rewriter & Script Detector<br/>(Produces Standalone English Query)"]:::core
@@ -76,7 +76,7 @@ flowchart TD
 
 ## 🔬 Core Contributions
 
-1. **C1 — DriftGuard Architecture**: Decoupled patient-state ledger, current-turn standalone retrieval, atomic claim verification, and deterministic emergency triage.
+1. **C1 — DriftGuard Architecture**: Decoupled patient-state ledger, current-turn standalone retrieval, atomic claim verification, and a planned deterministic emergency triage layer.
 2. **C2 — HHDB Benchmark (Hinglish Health Drift Benchmark)**: 300 curated multi-turn clinical conversations (3–15 turns) across 3 script variants (English, Devanagari Hindi, Roman Hinglish) with built-in drift traps (topic switching, pronoun follow-ups, user corrections, leak tests).
 3. **C3 — Scientific Drift Evaluation**: Rigorous evaluation measuring the **Unsupported-Claim Rate (UCR) vs. Turn Depth**, demonstrating that MedDriftGuard maintains flat error rates across extended conversations where traditional RAG fails.
 
@@ -86,7 +86,7 @@ flowchart TD
 
 - **Information Only**: MedDriftGuard is an informational awareness assistant. It **never diagnoses** medical conditions.
 - **Zero Drug Dosing**: The knowledge base and models are strictly prohibited from indexing, training on, or generating pharmaceutical drug dosages or titration schedules.
-- **Deterministic Triage**: Emergency signs (e.g. chest pain, stroke signs, difficulty breathing) trigger instantaneous hard-coded emergency instructions (112 / 108) without querying the LLM.
+- **Triage design**: Emergency signs and fixed India emergency instructions are specified in configuration, but the runtime triage gate is not enabled in this current prototype.
 - **Privacy by Design**: No real patient data is ever used. No personally identifiable information (PII) is recorded in logs or evaluation traces.
 
 ---
@@ -113,7 +113,7 @@ meddriftguard/
 │   ├── clean/                       # Cleaned text sections
 │   └── index/                       # Dense & sparse retrieval indices
 ├── src/                             # Source code
-│   ├── triage/                      # Deterministic red-flag triage gate
+│   ├── triage/                      # Reserved for the planned red-flag triage gate
 │   ├── rewriter/                    # Conversational query normalizer & rewriter
 │   ├── ledger/                      # Patient-state ledger (versioned facts)
 │   ├── retriever/                   # Hybrid retriever (multilingual dense + BM25 + RRF)
@@ -234,14 +234,18 @@ Retrieval uses the checked-in local KB and configured multilingual embedding mod
 
 ### Verified local checks
 
-- Current automated suite: `python -m pytest tests -q` (92 tests; see `docs/submission_status.md` for the dated verification record)
+- Current automated suite: `python -m pytest tests -q` (96 tests; see `docs/submission_status.md` for the dated verification record)
 - P3 fixture diagnostic: `python debug_p3.py`
 - Retrieval benchmark: `python -c "from eval.retrieval_eval import run_evaluation; run_evaluation()"`
 - The retrieval benchmark has 104 questions and the current local knowledge base has 26 chunks. See `docs/retrieval_results.md` for measured results and backend details.
 - The local Ollama rewriter can be created with `StandaloneRewriter.from_config()`; when the local service is unavailable or returns invalid JSON, it falls back to deterministic rules.
-- Acceptance gaps remain: the dense vectors are held in memory rather than persisted to Qdrant/FAISS; the supplied dev set has 104 questions, not the planned 140; the neural reranker and live Ollama model have not been verified.
+- Acceptance gaps remain: the default dense vectors are held in memory; optional FAISS persistence exists but is not enabled by default; the supplied dev set has 104 questions, not the planned 140; the neural reranker, live Ollama model, and runtime triage gate have not been verified.
 - The neural reranker is optional and can be installed with `pip install -e ".[reranker]"`; without it, retrieval uses the documented deterministic fallback.
 - The presentation website is local-only and explicitly marked DEMO MODE. It uses real local retrieval, but its generator and verifier are deterministic mocks.
+
+### Optional legacy PDF/FAISS integration
+
+The former PDF chatbot has been adapted behind two optional components: [PDF ingestion](./src/ingest/pdf_processor.py) and [FAISS persistence](./src/retriever/faiss_index.py). They are not part of the default trusted KB path. Install them with `pip install -e ".[pdf]"` and provide reviewed source provenance before indexing any document. See [docs/architecture.md](./docs/architecture.md), [docs/integration_note.md](./docs/integration_note.md), and [docs/demo_guide.md](./docs/demo_guide.md).
 
 ---
 
